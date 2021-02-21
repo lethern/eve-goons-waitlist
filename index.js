@@ -92,16 +92,16 @@ database.connect(function () {
 	//Extend some stuff
 	passport.use('provider', oauthStrategy);
 	refresh.use('provider', oauthStrategy);
-	app.use(session({
+		app.use(session({
 		store: new mongoStore({ db: database.db }),
 		secret: setup.data.sessionSecret,
 		cookie: { maxAge: 604800 * 1000 }, //Week long cookies for week long incursions!
-    resave: true,
-    saveUninitialized: true
+		resave: true,
+		saveUninitialized: true
 	}))
 
 	app.use(cookieParser());
-	app.use(session({ secret: setup.data.sessionSecret }));
+	//app.use(session({ secret: setup.data.sessionSecret }));
 	app.use(flash({ locals: 'flash' }));
 	app.use(passport.initialize());
 	app.use(passport.session());
@@ -139,3 +139,14 @@ database.connect(function () {
 		log.info('Express online and accepting connections');
 	});
 });
+
+let i = 0;
+
+
+var http = require('http');
+var port = 1337;
+
+http.createServer(function (req, res) {
+	res.writeHead(200, { 'Content-Type': 'text/plain' });
+	res.end('Hello World\n');
+}).listen(port);

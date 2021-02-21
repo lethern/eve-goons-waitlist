@@ -1,6 +1,6 @@
 var setup = require('../setup.js');
 var whitelist = require('../models/whitelist.js')(setup);
-var esi = require('eve-swagger');
+var esi = require('../swagger.js');
 const users = require('../models/users.js')(setup);
 
 //Render whitelist Page

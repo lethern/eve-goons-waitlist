@@ -1,5 +1,5 @@
 var fs = require('fs');
-var esi = require('eve-swagger');
+var esi = require('../swagger.js');
 var setup = require('../setup.js');
 var user = require('../models/user.js')(setup);
 var users = require('../models/users.js')(setup);

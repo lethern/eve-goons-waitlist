@@ -108,6 +108,7 @@ module.exports = (module) => {
     info: (msg, metadata) => logger.info(`[${filename}]: ${msg}`,metadata),
     debug: (msg, metadata) => logger.debug(`[${filename}]: ${msg}`, metadata),
     warn: (msg, metadata) => logger.warn(`[${filename}]: ${msg}`, metadata),
-    error: (msg, metadata) => logger.error(`[${filename}]: ${msg}`, metadata)
+	  error: (msg, metadata) =>
+		  logger.error(`[${filename}]: ${msg}`, metadata)
   }
 };

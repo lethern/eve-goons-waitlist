@@ -1,4 +1,4 @@
-var esi = require('eve-swagger');
+var esi = require('../swagger.js');
 var setup = require('../setup.js');
 var users = require('../models/users.js')(setup);
 const log = require('../logger.js')(module);

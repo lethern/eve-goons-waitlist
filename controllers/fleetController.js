@@ -1,6 +1,6 @@
 const setup = require('../setup.js');
 const broadcast = require('./broadcastController.js');
-const esi = require('eve-swagger');
+const esi = require('../swagger.js');
 const fleets = require('../models/fleets.js')(setup);
 const user = require('../models/user.js')(setup);
 const users = require('../models/users.js')(setup);
