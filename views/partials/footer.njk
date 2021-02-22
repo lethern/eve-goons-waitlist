@@ -191,7 +191,9 @@
 
         var payloadData = null;
         //Longpoll for Notifications
+		
         var poll = function () {
+		/*
             $.ajax({
             url: "/poll/{{userProfile.characterID}}",
             success: function(data){
@@ -210,8 +212,9 @@
             },
             timeout: 30000 // 30 seconds
             });
+		*/
         };
-
+		
         function enableNotificationsGranted() {
             console.log('Permission has been granted by the user');
             $( "#noNotify" ).hide();

@@ -2,7 +2,7 @@
 const { combine, timestamp, printf } = format;
 const path = require('path');
 const fs = require('fs');
-const colors = require('colors/safe');
+//const colors = require('colors/safe');
 
 const LOG_DIRECTORY = process.env.LOG_DIRECTORY || 'logs/';
 const MAX_LOG_LENGTH = process.env.MAX_LOG_LENGTH || 4000;
@@ -29,6 +29,7 @@ const extendedFormat = (info) => {
 };
 
 const myColorize = (info) => {
+	/*
   switch (info.level) {
     case 'warn': info.message = colors.yellow(info.message);
       break;
@@ -37,6 +38,7 @@ const myColorize = (info) => {
     case 'debug': info.message = colors.gray(info.message);
       break;
   }
+  */
 };
 
 const myFormat = (colorize) => {

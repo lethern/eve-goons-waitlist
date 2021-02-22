@@ -13,7 +13,7 @@ module.exports = function (setup) {
 	module.findOrCreateUser = function (users, refreshToken, characterDetails, cb) {
 		//Update the users refresh token
 		if(refreshToken){
-			db.updateOne({characterID: characterDetails.CharacterID}, {$set: {refreshToken: refreshToken}}, function(err, result){
+			db.updateOne({characterID: characterDetails.CharacterID}, {$set: {refreshToken: refreshToken, invalidToken: false}}, function(err, result){
 				console.info("users.findOrCreateUser: Updating refreshToken for " + characterDetails.CharacterName);
 			})
 		}//Check if the user exists
@@ -90,6 +90,7 @@ module.exports = function (setup) {
 				account: { main: true, linkedCharIDs: []},
 				settings: {smSideNav: false},
 				refreshToken: refreshToken,
+				invalidToken: false,
 				registrationDate: new Date(),
 				userVersion: 2
 			}
@@ -203,7 +204,8 @@ module.exports = function (setup) {
 					{
 						characterID: {
 							$in: mainObject.account.linkedCharIDs
-						}
+						},
+						invalidToken: false
 					}
 				).toArray(function(err, altObjects) {
 					var xformed = altObjects.map( item => {

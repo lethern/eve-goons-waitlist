@@ -55,15 +55,36 @@ module.exports = function() {
     * @todo: Use the cache for the systems 
     */
 	module.getRefreshToken = function(characterID, tokenCallback){
-		db.findOne({characterID: characterID}, function(err, doc){
+		db.findOne({ characterID: characterID }, function (err, doc) {
+			if (doc.invalidToken) {
+				//tokenCallback(null);
+				return;
+			}
 			refresh.requestNewAccessToken('provider', doc.refreshToken, function(error, accessToken, newRefreshToken){
 				if(error){
-					log.error("user.getRefreshToken - requestNewAccessToken: ", {pilot: characterID, error});
+					log.error("user.getRefreshToken - requestNewAccessToken: ", { pilot: characterID, error });
+					if (error.data) {
+						let error_d;
+						if (typeof error.data === 'string') {
+							try {
+								error_d = JSON.parse(error.data).error;
+							} catch (e) {
+							}
+						} else {
+							error_d = error.data.error;
+						}
+							
+						if (error_d == "invalid_token") {
+							db.updateOne({ 'characterID': characterID }, { $set: { invalidToken: true } }, function (err, result) {
+								if (err) log.error("user.getRefreshToken: Error for updateOne", { err, 'characterID': characterID });
+							});
+						}
+					}
 					tokenCallback(null);
 					return;
 				}
 
-				db.updateOne({ 'characterID': characterID }, { $set: { refreshToken: newRefreshToken } }, function (err, result) {
+				db.updateOne({ 'characterID': characterID }, { $set: { refreshToken: newRefreshToken, invalidToken: false } }, function (err, result) {
 					if (err) log.error("user.getRefreshToken: Error for updateOne", { err, 'characterID': characterID });
 					tokenCallback(accessToken);
 					return;

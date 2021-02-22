@@ -124,6 +124,7 @@ database.connect(function () {
 	var routeListen = require('./routes.js');
 	app.use(routeListen)
 
+	/*
 	//Longpolling
 	const longpoll = require("express-longpoll")(app, {
 		DEBUG: false,
@@ -133,6 +134,7 @@ database.connect(function () {
 		req.id = req.params.id;
 		next();
 	});	
+	*/
 
 	//Configure Express webserver
 	app.listen(setup.settings.port, function listening() {
@@ -142,7 +144,7 @@ database.connect(function () {
 
 let i = 0;
 
-
+/*
 var http = require('http');
 var port = 1337;
 
@@ -150,3 +152,4 @@ http.createServer(function (req, res) {
 	res.writeHead(200, { 'Content-Type': 'text/plain' });
 	res.end('Hello World\n');
 }).listen(port);
+*/
