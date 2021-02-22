@@ -101,7 +101,7 @@ database.connect(function () {
 	}))
 
 	app.use(cookieParser());
-	//app.use(session({ secret: setup.data.sessionSecret }));
+	app.use(session({ secret: setup.data.sessionSecret }));
 	app.use(flash({ locals: 'flash' }));
 	app.use(passport.initialize());
 	app.use(passport.session());
@@ -142,7 +142,6 @@ database.connect(function () {
 	});
 });
 
-let i = 0;
 
 /*
 var http = require('http');

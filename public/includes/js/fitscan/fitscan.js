@@ -198,7 +198,7 @@ function updateFit() {
     rig = 0;
 
     fit = "";
-    fit = fit + "[" + ship['name'] + ", Incursion Squad - Fit Scan]\n";
+    fit = fit + "[" + ship['name'] + ", Incursion - Fit Scan]\n";
     fit = fit + "\n";
     for (x in partial_fit) {
 	if (partial_fit[x]['slot'] != "L") {

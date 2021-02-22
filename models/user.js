@@ -59,6 +59,7 @@ module.exports = function() {
 			if (doc.invalidToken) {
 				//tokenCallback(null);
 				return;
+				//doc.refreshToken = null;
 			}
 			refresh.requestNewAccessToken('provider', doc.refreshToken, function(error, accessToken, newRefreshToken){
 				if(error){

@@ -39,12 +39,14 @@ module.exports = function (setup) {
             users.getMain(waitlistMain.characterID, function(userObject){
                 var disciplinary = false;
 
-                for(let i = 0; i < userObject.notes.length; i++){
-                    if (userObject.notes[i].isDisciplinary){
-                        var disciplinary = true;
-                        break;
-                    }
-                }
+				if (userObject && userObject.notes) {
+					for (let i = 0; i < userObject.notes.length; i++) {
+						if (userObject.notes[i].isDisciplinary) {
+							var disciplinary = true;
+							break;
+						}
+					}
+				}
 
                 var waitlist = {
                     "waitlistMain": waitlistMain,

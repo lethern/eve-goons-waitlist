@@ -27,6 +27,16 @@ module.exports = function (setup) {
 						});
 						userData.settings = mainUserData.settings;
 						userData.waitlistMain = mainUserData.waitlistMain;
+
+						req.user.role = mainUserData.role;
+						req.user.account.pilots = pilotArray.sort(function (a, b) {
+							if (a.name > b.name) return 1;
+							return -1;
+						});
+						req.user.settings = mainUserData.settings;
+						req.user.waitlistMain = mainUserData.waitlistMain;
+
+
 						req.session.passport.user = userData;
 						req.session.save(function (err) {
 							if (err) log.error("updateUserSession: Error for session.save", { err, 'characterID': user.characterID });
