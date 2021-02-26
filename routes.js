@@ -11,6 +11,7 @@ const statsController = require('./controllers/statisticsController.js');
 const waitlistController = require('./controllers/waitlistController.js');
 const fleetsController = require('./controllers/fleetController.js');
 
+
 	//Public Pages
 	router.get('/', waitlistController.index);
 	router.get('/logout', function(req, res){

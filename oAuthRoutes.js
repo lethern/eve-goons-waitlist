@@ -8,6 +8,12 @@ module.exports = function(app, passport, setup) {
 	    })
 	);
 
+	app.get('/auth_FC/provider',
+		passport.authenticate('provider', {
+			scope: setup.oauth.scopes_FC
+		})
+	);
+
 	// The OAuth 2.0 provider has redirected the user back to the application.
 	// Finish the authentication process by attempting to obtain an access
 	// token.  If authorization was granted, the user will be logged in.
