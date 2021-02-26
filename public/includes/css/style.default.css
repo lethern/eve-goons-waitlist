@@ -1513,8 +1513,11 @@ nav#sidebar.shrinked a[aria-expanded="true"]::after {
   height: 100%;
   display: block;
   z-index: -1;
-  background: url(../img/bg.jpg);
-  background-size: cover;
+    background: url(https://cdn.glitch.com/3e435ab2-f262-4215-90ec-db28a2bcf3e5%2Fimage0.png?v=1613946165276);
+  background-color: black;
+  background-size: auto;
+  background-repeat: no-repeat;
+  background-position: center;
   position: absolute;
   top: 0;
   right: 0;
@@ -1565,6 +1568,7 @@ nav#sidebar.shrinked a[aria-expanded="true"]::after {
 
 .login-page .form-holder .form {
   background: #2d3035;
+  opacity: 0.92;
 }
 
 .login-page .form-holder .form .form-group {
