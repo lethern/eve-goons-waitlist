@@ -10,7 +10,8 @@ const fc_tools_controller = require('./controllers/fcToolsController.js');
 const statsController = require('./controllers/statisticsController.js');
 const waitlistController = require('./controllers/waitlistController.js');
 const fleetsController = require('./controllers/fleetController.js');
-
+//
+const contractCheck = require('./controllers/contractCheck.js');
 
 	//Public Pages
 	router.get('/', waitlistController.index);
@@ -93,5 +94,7 @@ const fleetsController = require('./controllers/fleetController.js');
 	router.get('/api/sstats/members', statsController.getMemberList);
 	router.get('/api/sstats/corporations', statsController.getCorporationList);
 	router.get('/api/sstats/member-registration', statsController.getMontlySignups);//Todo make object array with monthName and count.
+
+	router.get('/test/contract-check', contractCheck.testList);
 
 	module.exports = router;

@@ -59,7 +59,7 @@
 		<i class="fas fa-hourglass-half"></i>
 		<i class="fas fa-lock-alt" data-fa-transform="shrink-6 down-2 right-4" style="color:#D6D8D9"></i>
 		</span>
-		Fleet Management</a>
+		<span>Fleet Management</span></a>
 		</li>
 		<li{{  " class=active" if sideBarSelected === 6 }}>
 		<a href="#fctools" aria-expanded="false" data-toggle="collapse" class="collapsed"><i class="fas fa-toolbox"></i> FC Tools <i class="fas fa-sort-down float-right"></i></a>
@@ -69,6 +69,7 @@
 			<li><a href="/commander/tools/skills">Pilot Skills</a></li>
 			<li><a href="#" data-toggle="modal" data-target="#waitlistBanner">Waitlist Banner</a></li>
 			<li><a href="/commander/tools/waitlist-logs">Waitlist Log</a></li>
+			<li><a href="/test/contract-check">Contracts</a></li>
 		</ul>
 		{% if userProfile.role.numeric >= 4 %}
 		<li{{  " class=active" if sideBarSelected === 7 }}>
