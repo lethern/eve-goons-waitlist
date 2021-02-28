@@ -29,15 +29,15 @@ module.exports = function (setup) {
 			var fullquery = docs.map(d => d.id);
 			var newBulkSearch = diffArray(ids, fullquery);
 
-			console.log('getContracts docs ' + docs.length + ', newBulkSearch (max 50) ' + newBulkSearch.length);
+			console.log('getContracts docs ' + docs.length + ', newBulkSearch (capped) ' + newBulkSearch.length);
 
 			if (newBulkSearch.length == 0) {
 				cb(null, docs);
 				return;
 			}
 
-			if (newBulkSearch.length > 50) {
-				newBulkSearch = newBulkSearch.slice(0, 50);
+			if (newBulkSearch.length > 2) {
+				newBulkSearch = newBulkSearch.slice(0, 2);
 			}
 
 			let count = newBulkSearch.length;
@@ -53,8 +53,8 @@ module.exports = function (setup) {
 			let contract_id = newBulkSearch[0];
 			ContractsApi.getCorporationsCorporationIdContractsContractIdItems(contract_id, corporationId, {}, callback);
 
-			var callback = function (error, data, response) {
-
+			function callback(error, data, response) {
+				console.log('callback ' + done);
 				if (error) {
 					if (error_called) return;
 					log.error("getContracts: Error for getCorporationsCorporationIdContractsContractIdItems", { error });
@@ -89,6 +89,12 @@ module.exports = function (setup) {
 
 			function _continue() {
 				console.log('getContracts continue ' + dataArr.length);
+
+				console.log('', JSON.stringify(dataArr));
+
+				//dataArr = dataArr.map(elem => {
+				//
+				//});
 
 				db.insertMany(dataArr, function (err, result) {
 					if (err) {

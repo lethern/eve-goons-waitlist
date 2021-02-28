@@ -272,18 +272,25 @@ exports.testList = function (req, res) {
 			}
 
 			function getContracts() {
-				console.log('calling getContracts');
-				cacheContracts.getContracts(corporationId, contractIds, (error, result) => {
-					if (error) {
-						params.error = error;
-						_continue();
-						return;
-					}
-					//contractIds
+				try {
+					cacheContracts.getContracts(corporationId, contractIds, (error, result) => {
+						if (error) {
+							console.log('getContracts error');
+							params.error = error;
+							_continue();
+							return;
+						}
+						//contractIds
 
-					contractIds = null;
-					getItems();
-				});
+						contractIds = null;
+						getItems();
+					});
+				} catch (e) {
+					console.log('getContracts exception');
+					params.error = e;
+					_continue();
+				}
+				
 			}
 
 			function getItems() {
