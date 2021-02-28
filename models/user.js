@@ -57,6 +57,7 @@ module.exports = function() {
 	module.getRefreshToken = function(characterID, tokenCallback){
 		db.findOne({ characterID: characterID }, function (err, doc) {
 			if (doc.invalidToken) {
+				log.error("user.getRefreshToken - invalidToken: ", { pilot: characterID });
 				//tokenCallback(null);
 				return;
 				//doc.refreshToken = null;

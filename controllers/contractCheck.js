@@ -3,6 +3,7 @@ const user = require('../models/user.js')(setup);
 const users = require('../models/users.js')(setup);
 const log = require('../logger.js')(module);
 const ESI2 = require('eve_swagger_interface');
+const cache = require('../cache.js')(setup);
 
 
 const ESI2_defaultClient = ESI2.ApiClient.instance;
@@ -13,8 +14,10 @@ exports.testList = function (req, res) {
 
 		var userProfile = req.user;
 		var sideBarSelected = 5;
-		let characterID = 2116579054;
-		var corporationId = 98636728;
+		//let characterID = 2116579054; for Nota
+		//var corporationId = 98636728;
+		let characterID = 2112992068; // Jagger01
+		let corporationId = 98119924;
 
 		user.getRefreshToken(characterID, function (accessToken) {
 			if (!accessToken) {
@@ -48,7 +51,7 @@ exports.testList = function (req, res) {
 					genPage({ resData, ...other });
 				}
 			};
-			
+
 			ContractsApi.getCorporationsCorporationIdContracts(corporationId, opts, callback);
 		})
 
@@ -57,28 +60,63 @@ exports.testList = function (req, res) {
 			let other = {};
 
 			if (params.resData) {
+
+				other.refreshMS = new Date(params.expires) - new Date(params.date);
+
 				let extraData = {};
 				let outgoing = 0;
 
+				let userIDs = [];
+
 				data = params.resData;
 				data.forEach(row => {
-					let date = new Date(row.dateIssued);
-					let locale = 'en-GB';
-					row.dateIssued = date.toLocaleDateString(locale) + ' ' + date.toLocaleTimeString(locale);
-
-					// issuer
-					if (!extraData[row.issuerId]) {
-						users.findAndReturnUser(row.issuerId, function (response) {
-							receivedExtraData(row.issuerId, response);
-						});
-						outgoing++;
-						extraData[row.issuerId] = { rows: [row] };
-					} else {
-						extraData[row.issuerId].rows.push(row);
+					if (row.issuerId) {
+						if (!userIDs.includes(row.issuerId)) usersIDs.push(row.issuerId);
 					}
-					//return row;
+					if (row.assigneeId) {
+						if (!userIDs.includes(row.assigneeId)) usersIDs.push(row.assigneeId);
+					}
 				});
 
+				let userDict = {};
+				cache.massGet(userIDs, (usersResult) => {
+					usersResult.forEach((row) => {
+						userDict[row.id] = row.name;
+					});
+
+
+					data.forEach(row => {
+						let date = new Date(row.dateIssued);
+						let locale = 'en-GB';
+						row.dateIssued = date.toLocaleDateString(locale) + ' ' + date.toLocaleTimeString(locale);
+
+						row.issuer = userDict[row.issuerId];
+						row.assignee = userDict[row.assigneeId];
+						// issuer
+						//if (!extraData[row.issuerId]) {
+						//	users.findAndReturnUser(row.issuerId, function (response) {
+						//		receivedExtraData(row.issuerId, response);
+						//	});
+						//	outgoing++;
+						//	extraData[row.issuerId] = { rows: [row] };
+						//} else {
+						//	extraData[row.issuerId].rows.push(row);
+						//}
+						//return row;
+					});
+
+					_continue();
+				});
+
+				
+				//userIDs.forEach(id => {
+				//	users.findAndReturnUser(row.issuerId, function (response) {
+				//		receivedExtraData(row.issuerId, response);
+				//	});
+				//});
+
+
+				/*
 				function receivedExtraData(id, user) {
 					let text;
 					if (!user) {
@@ -95,9 +133,9 @@ exports.testList = function (req, res) {
 						_continue();
 					}
 				}
+				*/
 
-
-				other.refreshMS = new Date(params.expires) - new Date(params.date);
+				
 			}
 
 			function _continue() {
