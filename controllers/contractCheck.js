@@ -10,19 +10,12 @@ const ContractsApi = new ESI2.ContractsApi();
 
 exports.testList = function (req, res) {
 	if (req.isAuthenticated() && users.isRoleNumeric(req.user, 3)) {
+
 		var userProfile = req.user;
 		var sideBarSelected = 5;
-
 		let characterID = 2116579054;
-		/*
-		users.findAndReturnUser(characterID, function (profile) {
-			users.getAlts(characterID, function (Alts) {
-				manageUser = profile;
-				manageUser.account.pilots = Alts;
-				genPage();
-			})
-		})
-		*/
+		var corporationId = 98636728;
+
 		user.getRefreshToken(characterID, function (accessToken) {
 			if (!accessToken) {
 				let error = "contractCheck.testList: Could not get an accessToken"
@@ -35,27 +28,83 @@ exports.testList = function (req, res) {
 			var evesso = ESI2_defaultClient.authentications['evesso'];
 			evesso.accessToken = accessToken;
 
-			var corporationId = 109788662;
 			let page = 1;
 
 			var opts = {
 				'page': page,
 			};
 
-			var callback = function (error, data, response) {
+			var callback = function (error, resData, response) {
 				if (error) {
+					console.log('error', error);
 					genPage({ error });
 				} else {
-					genPage({ data });
+					let other = {};
+					if (response.header) {
+						other.date = response.header.date;
+						other.expires = response.header.expires;
+						other.lastmodified = response.header['last-modified'];
+					}
+					genPage({ resData, ...other });
 				}
 			};
+			
 			ContractsApi.getCorporationsCorporationIdContracts(corporationId, opts, callback);
-		}) 
+		})
 
 		function genPage(params) {
-			let data = params.data;
-			res.render('contractCheck.njk', { userProfile, sideBarSelected, error: params.error, data });
+			let data = null;
+			let other = {};
+
+			if (params.resData) {
+				let extraData = {};
+				let outgoing = 0;
+
+				data = params.resData;
+				data.forEach(row => {
+					let date = new Date(row.dateIssued);
+					let locale = 'en-GB';
+					row.dateIssued = date.toLocaleDateString(locale) + ' ' + date.toLocaleTimeString(locale);
+
+					// issuer
+					if (!extraData[row.issuerId]) {
+						users.findAndReturnUser(row.issuerId, function (response) {
+							receivedExtraData(row.issuerId, response);
+						});
+						outgoing++;
+						extraData[row.issuerId] = { rows: [row] };
+					} else {
+						extraData[row.issuerId].rows.push(row);
+					}
+					//return row;
+				});
+
+				function receivedExtraData(id, user) {
+					let text;
+					if (!user) {
+						//extraData[id].row.issuer = ;
+						text = id;
+					} else {
+						text = user.name;
+					}
+
+					extraData[id].rows.forEach(row => { row.issuer = text });
+
+					--outgoing;
+					if (outgoing == 0) {
+						_continue();
+					}
+				}
+
+
+				other.refreshMS = new Date(params.expires) - new Date(params.date);
+			}
+
+			function _continue() {
+				res.render('contractCheck.njk', { userProfile, sideBarSelected, error: params.error, data, other });
+			}
 		};
+
 
 		/*
 		var api = new ESI.AllianceApi()
