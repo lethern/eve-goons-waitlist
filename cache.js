@@ -127,27 +127,42 @@ module.exports = function (setup) {
 	}
 
 	module.massGet = function (ids, cb) {
-		ids = uniq(ids);
-		db.find({ 'id': { $in: ids } }).toArray(function (err, docs) {
-			if (err) log.error("massGet: Error for db.find", { err, ids });
-			var fullquery = docs.map(d => d.id);
-			var newBulkSearch = diffArray(fullquery, ids);
-			if (newBulkSearch.length == 0) return;
+		try {
+			ids = uniq(ids);
 
-			esi.names(newBulkSearch).then(function (items) {
-				db.insertMany(items, function (err, result) {
-					if (err) log.error("cache.massGet: Error for db.insertMany", { err, items });
-					if (typeof cb === "function") {
+			console.log('massGet ' + ids.length);
+		
+			db.find({ 'id': { $in: ids } }).toArray(function (err, docs) {
+				if (err) log.error("massGet: Error for db.find", { err, ids });
+				var fullquery = docs.map(d => d.id);
+				var newBulkSearch = diffArray(fullquery, ids);
 
-						var all = docs.concat(items);
+				console.log('massGet newBulkSearch ' + newBulkSearch.length);
 
-						cb(all);
-					}
+				if (newBulkSearch.length == 0) {
+					cb(docs);
+					return;
+				}
+
+				esi.names(newBulkSearch).then(function (items) {
+					console.log('massGet items ' + items.length);
+
+					db.insertMany(items, function (err, result) {
+						if (err) log.error("cache.massGet: Error for db.insertMany", { err, items });
+						if (typeof cb === "function") {
+
+							var all = docs.concat(items);
+
+							cb(all);
+						}
+					});
+				}).catch(err => {
+					log.error("cache.massGet: Error for esi.names", { err, newBulkSearch });
 				});
-			}).catch(err => {
-				log.error("cache.massGet: Error for esi.names", { err, newBulkSearch });
 			});
-		});
+		} catch (e) {
+			console.log('massGet ', e);
+		}
 	}
 
 	return module;

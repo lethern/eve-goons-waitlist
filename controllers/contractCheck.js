@@ -39,7 +39,10 @@ exports.testList = function (req, res) {
 
 			var callback = function (error, resData, response) {
 				if (error) {
-					console.log('error', error);
+					//console.log('error', error);
+
+					console.log("Error", error.name, error.stack);
+
 					genPage({ error });
 				} else {
 					let other = {};
@@ -52,6 +55,7 @@ exports.testList = function (req, res) {
 				}
 			};
 
+			log.info('testList 1 getCorporations');
 			ContractsApi.getCorporationsCorporationIdContracts(corporationId, opts, callback);
 		})
 
@@ -60,6 +64,8 @@ exports.testList = function (req, res) {
 			let other = {};
 
 			if (params.resData) {
+
+				log.info('testList 2 genPage');
 
 				other.refreshMS = new Date(params.expires) - new Date(params.date);
 
@@ -71,12 +77,14 @@ exports.testList = function (req, res) {
 				data = params.resData;
 				data.forEach(row => {
 					if (row.issuerId) {
-						if (!userIDs.includes(row.issuerId)) usersIDs.push(row.issuerId);
+						if (!userIDs.includes(row.issuerId)) userIDs.push(row.issuerId);
 					}
 					if (row.assigneeId) {
-						if (!userIDs.includes(row.assigneeId)) usersIDs.push(row.assigneeId);
+						if (!userIDs.includes(row.assigneeId)) userIDs.push(row.assigneeId);
 					}
 				});
+
+				log.info('testList 3 get ' + userIDs.length);
 
 				let userDict = {};
 				cache.massGet(userIDs, (usersResult) => {
@@ -84,6 +92,7 @@ exports.testList = function (req, res) {
 						userDict[row.id] = row.name;
 					});
 
+					log.info('testList 4 got ' + usersResult.length);
 
 					data.forEach(row => {
 						let date = new Date(row.dateIssued);
@@ -139,6 +148,7 @@ exports.testList = function (req, res) {
 			}
 
 			function _continue() {
+				log.info('testList 5 _continue ' + data.length);
 				res.render('contractCheck.njk', { userProfile, sideBarSelected, error: params.error, data, other });
 			}
 		};
