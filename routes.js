@@ -96,5 +96,6 @@ const contractCheck = require('./controllers/contractCheck.js');
 	router.get('/api/sstats/member-registration', statsController.getMontlySignups);//Todo make object array with monthName and count.
 
 	router.get('/test/contract-check', contractCheck.testList);
+	router.get('/test/contract-check2', contractCheck.testList2);
 
 	module.exports = router;

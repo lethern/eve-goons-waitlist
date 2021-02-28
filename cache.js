@@ -127,42 +127,48 @@ module.exports = function (setup) {
 	}
 
 	module.massGet = function (ids, cb) {
-		try {
-			ids = uniq(ids);
+		ids = uniq(ids);
 
-			console.log('massGet ' + ids.length);
+		console.log('massGet ' + ids.length);
 		
-			db.find({ 'id': { $in: ids } }).toArray(function (err, docs) {
-				if (err) log.error("massGet: Error for db.find", { err, ids });
-				var fullquery = docs.map(d => d.id);
-				var newBulkSearch = diffArray(fullquery, ids);
+		db.find({ 'id': { $in: ids } }).toArray(function (err, docs) {
+			if (err) {
+				log.error("massGet: Error for db.find", { err, ids });
+				cb(err);
+				return;
+			}
 
-				console.log('massGet newBulkSearch ' + newBulkSearch.length);
+				
+			var fullquery = docs.map(d => d.id);
+			var newBulkSearch = diffArray(ids, fullquery);
 
-				if (newBulkSearch.length == 0) {
-					cb(docs);
-					return;
-				}
+			console.log('massGet docs ' + docs.length + ', newBulkSearch ' + newBulkSearch.length);
 
-				esi.names(newBulkSearch).then(function (items) {
-					console.log('massGet items ' + items.length);
+			if (newBulkSearch.length == 0) {
+				cb(null, docs);
+				return;
+			}
 
-					db.insertMany(items, function (err, result) {
-						if (err) log.error("cache.massGet: Error for db.insertMany", { err, items });
-						if (typeof cb === "function") {
+			esi.names(newBulkSearch).then(function (items) {
+				console.log('massGet items ' + items.length);
 
-							var all = docs.concat(items);
+				db.insertMany(items, function (err, result) {
+					if (err) {
+						log.error("cache.massGet: Error for db.insertMany", { err, items });
+						cb(err);
+						return;
+					}
+					if (typeof cb === "function") {
+						let all = docs.concat(items);
 
-							cb(all);
-						}
-					});
-				}).catch(err => {
-					log.error("cache.massGet: Error for esi.names", { err, newBulkSearch });
+						cb(null, all);
+					}
 				});
+			}).catch(err => {
+				log.error("cache.massGet: Error for esi.names", { err, newBulkSearch });
+				cb(err);
 			});
-		} catch (e) {
-			console.log('massGet ', e);
-		}
+		});
 	}
 
 	return module;
