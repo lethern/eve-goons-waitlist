@@ -129,8 +129,6 @@ module.exports = function (setup) {
 	module.massGet = function (ids, cb) {
 		ids = uniq(ids);
 
-		console.log('massGet ' + ids.length);
-		
 		db.find({ 'id': { $in: ids } }).toArray(function (err, docs) {
 			if (err) {
 				log.error("massGet: Error for db.find", { err, ids });

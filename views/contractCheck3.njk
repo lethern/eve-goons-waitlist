@@ -18,25 +18,17 @@
                     <table id="example" class="table-striped" style="width:100%">
                         <thead>
                             <tr>
-                                <th>Date issued</th>
-                                <th>Issuer</th>
-								<th>Assignee</th>
-								<th>Ship</th>
-                                <th>Price</th>
-								<th>Status</th>
-								<th>Type</th>
+                                <th>pilot</th>
+                                <th>rented</th>
+								<th>returned</th>
                             </tr>
                         </thead>
                         <tbody>
                             {% for row in data %}
                             <tr>
-                                <td>{{ row.dateIssuedStr }}</td>
-                                <td>{{ row.issuer }}</td>
-								<td>{{ row.assignee }}</td>
-								<td>{{ row.ships }}</td>
-                                <td>{{ row.price }}</td>
-                                <td>{{ row.status }}</td>
-                                <td>{{ row.type }}</td>
+                                <td>{{ row.pilotName }}</td>
+                                <td>{{ row.left }}</td>
+								<td>{{ row.right }}</td>
                             </tr>
                             {% endfor %}
                         </tbody>
@@ -52,6 +44,10 @@
 	.refresh{
 		display: inline !important;
 	}
+	table.dataTable td{
+	    white-space: pre;
+	}
+
 </style>
 <script>
 $(document).ready(function() {
@@ -60,32 +56,8 @@ $(document).ready(function() {
         "ordering": false
     });
 
-	refresh_time_s = {{ other.refreshMS }};
-	refresh_time = $('#refresh_time');
-
-	setInterval(function(){
-		refresh_time_s -= 1000;
-		if(refresh_time_s < 0){
-			refresh_time_s= 0;
-			refresh_time.text('ready');
-		}else{
-			time = msToTime(refresh_time_s);
-			refresh_time.text(time);
-		}
-	}, 1000);
-	
 })
 
 
-function msToTime(s) {
-			var ms = s % 1000;
-			s = (s - ms) / 1000;
-			var secs = s % 60;
-			s = (s - secs) / 60;
-			var mins = s % 60;
-
-			if(mins && secs <10) secs = '0'+secs;
-			return mins + ':' + secs;
-		}
 </script>
 {%- include "./partials/footer.njk" %}

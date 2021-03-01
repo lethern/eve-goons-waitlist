@@ -26,7 +26,7 @@ function datetimeFormat (date) {
 
 
 
-exports.testList2 = function (req, res) {
+exports.testList_x = function (req, res) {
 	if (!(req.isAuthenticated() && users.isRoleNumeric(req.user, 3))) {
 		res.status(401).redirect("/");
 		return;
@@ -143,6 +143,18 @@ exports.testList2 = function (req, res) {
 };
 
 exports.testList = function (req, res) {
+	renderContracts(req, res, 1);
+};
+
+exports.testList2 = function (req, res) {
+	renderContracts(req, res, 2);
+};
+
+exports.testList3 = function (req, res) {
+	renderContracts(req, res, 3);
+};
+
+function renderContracts(req, res, mode) {
 	if (!(req.isAuthenticated() && users.isRoleNumeric(req.user, 3))) {
 		res.status(401).redirect("/");
 		return;
@@ -150,8 +162,6 @@ exports.testList = function (req, res) {
 
 	let userProfile = req.user;
 	let sideBarSelected = 5;
-	//let characterID = 2116579054; for Nota
-	//var corporationId = 98636728;
 	let characterID = 2112992068; // Jagger01
 	let corporationId = 98119924; // dgiad
 
@@ -224,20 +234,12 @@ exports.testList = function (req, res) {
 				}
 			});
 
-			console.log('genPage', data.length);
-
 			other.refreshMS = new Date(params.expires) - new Date(params.date);
 
 			let userIDs = [];
 			let contractIds = [];
 
-			//data.forEach(row => {
-			//	row.dateIssued = new Date(row.dateIssued);
-			//});
-			//if (data.length) console.log('last ', data[data.length - 1].dateIssued);
-			data = data.sort((a, b) => b.dateIssued - a.dateIssued).slice(0, 500);
-			//data = data.reverse().slice(0, 100);
-
+			data = data.sort((a, b) => b.dateIssued - a.dateIssued).slice(0, 1000);
 			
 			data.forEach(row => {
 				if (row.origin.issuerId) {
@@ -272,16 +274,10 @@ exports.testList = function (req, res) {
 						userDict[row.id] = row.name;
 					});
 
-					//data = data.map(row => {
 					data.forEach(row => {
 						row.dateIssuedStr = datetimeFormat(row.dateIssued);
 						row.issuer = userDict[row.origin.issuerId];
 						row.assignee = userDict[row.origin.assigneeId];
-
-						//let dateIssuedStr = datetimeFormat(row.dateIssued);
-						//let issuer = userDict[row.issuerId];
-						//let assignee = userDict[row.assigneeId];
-						//return { ...row, dateIssuedStr, issuer, assignee };
 					});
 
 					getContractShips();
@@ -297,7 +293,6 @@ exports.testList = function (req, res) {
 							_continue();
 							return;
 						}
-						//contractIds
 
 						let contractShipsMap = {};
 						contractShips.forEach(elem => {
@@ -305,9 +300,7 @@ exports.testList = function (req, res) {
 						});
 						//result [{ id: contract_id, ships }]
 
-						//console.log('contractShipsMap ', contractShipsMap);
 						data.forEach(row => {
-							//console.log('row ', row);
 							let ships = contractShipsMap[row.contractId];
 							if(ships)
 								row.ships = ships.join(' ');
@@ -321,17 +314,122 @@ exports.testList = function (req, res) {
 					params.error = e;
 					_continue();
 				}
-				
 			}
-
 		}
 
 		function _continue() {
-			console.log('render ', data.length, ' error ' + params.error);
-			res.render('contractCheck.njk', { userProfile, sideBarSelected, error: params.error, data, other });
-			params = null;
-			data = null;
-			other = null;
+			if (mode == 1) {
+				console.log('render ', data.length, (params.error ? ' error ' + params.error : ''));
+				res.render('contractCheck.njk', { userProfile, sideBarSelected, error: params.error, data, other });
+				params = null;
+				data = null;
+				other = null;
+			} else if (mode == 2) {
+				renderContracts_continue2(res, userProfile, sideBarSelected, params.error, data, other);
+			} else if (mode == 3) {
+				renderContracts_continue3(res, userProfile, sideBarSelected, params.error, data, other);
+			}
 		}
 	};
+}
+
+function renderContracts_continue2(res, userProfile, sideBarSelected, error, data, other) {
+	let renderData = [];
+
+	let pilots = {};
+	data.forEach(row => {
+		if (row.assignee == 'DGIAD') {
+			if (!pilots[row.issuer]) pilots[row.issuer] = { returned: [], rented: [] };
+			pilots[row.issuer].returned.push(row);
+		} else {
+			if (!pilots[row.assignee]) pilots[row.assignee] = { returned: [], rented: [] };
+			pilots[row.assignee].rented.push(row);
+		}
+	});
+
+	for (let pilotName in pilots) {
+		let returned = flatten(pilots[pilotName].returned.map(elem => elem.ships.split(' ')));
+		let returnedCounted = countElems(returned).join('\n');
+		let rented = flatten(pilots[pilotName].rented.map(elem => elem.ships.split(' ')));
+		let rentedCounted = countElems(rented).join('\n');
+		renderData.push({ pilotName, returned: returnedCounted, rented: rentedCounted })
+	}
+
+	console.log('render2 ', renderData.length, (error ? ' error ' + error : ''));
+	res.render('contractCheck2.njk', { userProfile, sideBarSelected, error, data: renderData, other });
+}
+
+function flatten(arr) {
+	return [].concat(...arr);
+}
+
+function countElems(arr) {
+	let result = [];
+	arr.sort();
+	var current = null;
+	var cnt = 0;
+	for (var i = 0; i < arr.length; i++) {
+		if (arr[i] != current) {
+			if (current && cnt > 0) {
+				result.push(current + ' x' + cnt);
+			}
+			current = arr[i];
+			cnt = 1;
+		} else {
+			cnt++;
+		}
+	}
+	if (cnt > 0) {
+		result.push(current + ' x' + cnt);
+	}
+	return result;
+}
+
+
+function renderContracts_continue3(res, userProfile, sideBarSelected, error, data, other) {
+	let renderData = [];
+
+	let pilots = {};
+	data.forEach(row => {
+		if (row.assignee == 'DGIAD') {
+			if (!pilots[row.issuer]) pilots[row.issuer] = { returned: [], rented: [] };
+			pilots[row.issuer].returned.push(row);
+		} else {
+			if (!pilots[row.assignee]) pilots[row.assignee] = { returned: [], rented: [] };
+			pilots[row.assignee].rented.push(row);
+		}
+	});
+
+	for (let pilotName in pilots) {
+		let returned = flatten(pilots[pilotName].returned.map(elem => {
+			return elem.ships.split(' ').map(ship => ({ returned: 1, rented: 0, ship, date: elem.dateIssued }));
+		}));
+		let returnedCounted = countElems(returned).join('\n');
+		let rented = flatten(pilots[pilotName].rented.map(elem => {
+			return elem.ships.split(' ').map(ship => ({ returned: 0, rented: 1, ship, date: elem.dateIssued }));
+		}));
+
+		let all = returned.concat(rented).sort((a, b) => a.date - b.date);
+		let left = [];
+		let right = [];
+		let side = 0;
+		for (let elem of all) {
+			if (elem.rented) {
+				if (side) right.push('');
+				side = true;
+				left.push(elem.ship + ' ' +datetimeFormat(elem.date))
+			}
+			if (elem.returned) {
+				if (!side) left.push('');
+				side = 0;
+				right.push(elem.ship + ' ' + datetimeFormat(elem.date))
+			}
+		}
+
+		//let rentedCounted = countElems(rented).join('\n');
+		renderData.push({ pilotName, left: left.join('\n'), right: right.join('\n') })
+	}
+
+	console.log('render2 ', renderData.length, (error ? ' error ' + error : ''));
+	res.render('contractCheck2.njk', { userProfile, sideBarSelected, error, data: renderData, other });
 }

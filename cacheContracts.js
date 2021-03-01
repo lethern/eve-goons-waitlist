@@ -17,7 +17,6 @@ function diffArray(arr1, arr2) {
 
 function uniq(list) {
 	return [...new Set(list)];
-	//return list.reduce((acc, d) => acc.includes(d) ? acc : acc.concat(d), []);
 }
 
 
@@ -81,28 +80,29 @@ module.exports = function (setup) {
 
 				// if there was no error, we run a loop
 				if (done % 20 == 0) {
-					runLoop();
+					setTimeout(function () {
+						runLoop();
+					}, 10 * 1000 + 100);
 				}
 			};
 			
 			function runLoop() {
-				setTimeout(function () {
-					console.log('getting ' + lastInvoked + '...' + (lastInvoked+20)+'/'+count);
-					for (let i = 0; i < 20; ++i) {
+				console.log('getting ' + lastInvoked + '...' + (lastInvoked + 20) + '/' + count);
+
+				for (let i = 0; i < 20; ++i) {
 					
-						if (lastInvoked >= count) {
-							console.log('done ' + lastInvoked);
-							return;
-						}
-
-						let contract_id = lackingContractRecords[lastInvoked];
-						++lastInvoked;
-
-						ContractsApi.getCorporationsCorporationIdContractsContractIdItems(contract_id, corporationId, {}, function (error, data) {
-							callback(error, data, contract_id);
-						});
+					if (lastInvoked >= count) {
+						console.log('done ' + lastInvoked);
+						return;
 					}
-				}, 10*1000+100);
+
+					let contract_id = lackingContractRecords[lastInvoked];
+					++lastInvoked;
+
+					ContractsApi.getCorporationsCorporationIdContractsContractIdItems(contract_id, corporationId, {}, function (error, data) {
+						callback(error, data, contract_id);
+					});
+				}
 			};
 			
 
@@ -150,7 +150,7 @@ module.exports = function (setup) {
 				contract.data.forEach(record => {
 					let name = itemNames[record.typeId];
 
-					if (['Basilisk', 'Gila', 'Nighthawk', 'Praxis', 'Huginn'].includes(name)) {
+					if (['Basilisk', 'Gila', 'Nighthawk', 'Praxis', 'Huginn', 'Gnosis', 'Rapier', 'Catalyst', 'Ishtar', 'Bestower', 'Drake'].includes(name)) {
 						ships.push(name);
 					}
 				});
@@ -207,8 +207,6 @@ module.exports = function (setup) {
 					return;
 				}
 
-				//console.log('API called successfully. Returned data: ' + JSON.stringify(data));
-
 				dbItems.insertMany(data, function (err, result) {
 					if (err) {
 						log.error("insertMany: Error for db.insertMany", { err });
@@ -216,21 +214,11 @@ module.exports = function (setup) {
 						return;
 					}
 
-					console.log('saved ');
-					/*
-					 "category": "inventory_type",
-					"id": 17715,
-					"name": "Gila"
-					*/
-
 					let all_data = docs.concat(data);
 					cb(null, all_data);
 				});
-
 			};
-
 		});
-
 	};
 
 
