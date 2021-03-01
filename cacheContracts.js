@@ -42,32 +42,37 @@ module.exports = function (setup) {
 				return;
 			}
 
-			if (lackingContractRecords.length > 2) {
-				lackingContractRecords = lackingContractRecords.slice(0, 2);
+			if (lackingContractRecords.length > 60) {
+				lackingContractRecords = lackingContractRecords.slice(0, 60);
 			}
 
 			let count = lackingContractRecords.length;
 			let done = 0;
+			let lastInvoked = 0;
 			let error_called = false;
 			let contractRecords = [];
 
-			let contract_id = lackingContractRecords[0];
-			ContractsApi.getCorporationsCorporationIdContractsContractIdItems(contract_id, corporationId, {}, function (error, data) {
-				callback(error, data, contract_id);
-			});
+
+			runLoop();
+
+			//let contract_id = lackingContractRecords[lastInvoked];
+			//ContractsApi.getCorporationsCorporationIdContractsContractIdItems(contract_id, corporationId, {}, function (error, data) {
+			//	callback(error, data, contract_id);
+			//});
 
 			function callback(error, data, contract_id) {
-				console.log('callback ' + done);
+				if (error_called) return;
+
 				if (error) {
-					if (error_called) return;
 					log.error("getContracts: Error for getCorporationsCorporationIdContractsContractIdItems", { error, contract_id });
-					cb(error);
 					error_called = true;
+					cb(error);
 					return;
+				} else {
+					contractRecords.push({ contract_id, data });
 				}
 
-				contractRecords.push({ contract_id, data });
-
+				
 				done++;
 				if (done == count) {
 					_continue();
@@ -75,20 +80,29 @@ module.exports = function (setup) {
 				}
 
 				// if there was no error, we run a loop
-				if (done == 1) {
-					console.log("received 1, running loop")
+				if (done % 20 == 0) {
 					runLoop();
 				}
 			};
 			
 			function runLoop() {
-				for (let i = 1; i < count; ++i) {
-					let contract_id = lackingContractRecords[i];
+				setTimeout(function () {
+					console.log('getting ' + lastInvoked + '...' + (lastInvoked+20)+'/'+count);
+					for (let i = 0; i < 20; ++i) {
+					
+						if (lastInvoked >= count) {
+							console.log('done ' + lastInvoked);
+							return;
+						}
 
-					ContractsApi.getCorporationsCorporationIdContractsContractIdItems(contract_id, corporationId, {}, function (error, data) {
-						callback(error, data, contract_id);
-					});
-				}
+						let contract_id = lackingContractRecords[lastInvoked];
+						++lastInvoked;
+
+						ContractsApi.getCorporationsCorporationIdContractsContractIdItems(contract_id, corporationId, {}, function (error, data) {
+							callback(error, data, contract_id);
+						});
+					}
+				}, 10*1000+100);
 			};
 			
 
@@ -136,7 +150,7 @@ module.exports = function (setup) {
 				contract.data.forEach(record => {
 					let name = itemNames[record.typeId];
 
-					if (['Basilisk', 'Gila'].includes(name)) {
+					if (['Basilisk', 'Gila', 'Nighthawk', 'Praxis', 'Huginn'].includes(name)) {
 						ships.push(name);
 					}
 				});
@@ -144,7 +158,7 @@ module.exports = function (setup) {
 				contracts_ships.push({ id: contract_id, ships });
 			});
 
-			console.log('saving contracts_ships', contracts_ships);
+			console.log('saving contracts_ships', contracts_ships.length);
 
 			db.insertMany(contracts_ships, function (err, result) {
 				if (err) {

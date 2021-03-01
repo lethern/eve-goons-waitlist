@@ -208,7 +208,21 @@ exports.testList = function (req, res) {
 		let other = {};
 
 		if (params.resData) {
-			data = params.resData;
+			data = params.resData.map(row => {
+				return {
+					origin: row,
+					dateIssued: row.dateIssued,
+
+					contractId: row.contractId,
+					dateIssuedStr: '',
+					issuer: '',
+					assignee: '',
+					ships: '',
+					price: row.price,
+					status: row.status,
+					type: row.type,
+				}
+			});
 
 			console.log('genPage', data.length);
 
@@ -226,14 +240,17 @@ exports.testList = function (req, res) {
 
 			
 			data.forEach(row => {
-				if (row.issuerId) {
-					if (!userIDs.includes(row.issuerId)) userIDs.push(row.issuerId);
+				if (row.origin.issuerId) {
+					if (!userIDs.includes(row.origin.issuerId)) userIDs.push(row.origin.issuerId);
 				}
-				if (row.assigneeId) {
-					if (!userIDs.includes(row.assigneeId)) userIDs.push(row.assigneeId);
+				if (row.origin.assigneeId) {
+					if (!userIDs.includes(row.origin.assigneeId)) userIDs.push(row.origin.assigneeId);
 				}
 
-				contractIds.push(row.contractId);
+				if (!['cancelled', 'rejected', 'failed', 'deleted', 'reversed'].includes(row.origin.status)) {
+					// "outstanding", "in_progress", "finished_issuer", "finished_contractor", "finished"
+					contractIds.push(row.contractId);
+				}
 			});
 
 
@@ -258,8 +275,8 @@ exports.testList = function (req, res) {
 					//data = data.map(row => {
 					data.forEach(row => {
 						row.dateIssuedStr = datetimeFormat(row.dateIssued);
-						row.issuer = userDict[row.issuerId];
-						row.assignee = userDict[row.assigneeId];
+						row.issuer = userDict[row.origin.issuerId];
+						row.assignee = userDict[row.origin.assigneeId];
 
 						//let dateIssuedStr = datetimeFormat(row.dateIssued);
 						//let issuer = userDict[row.issuerId];
@@ -287,8 +304,13 @@ exports.testList = function (req, res) {
 							contractShipsMap[elem.id] = elem.ships;
 						});
 						//result [{ id: contract_id, ships }]
+
+						//console.log('contractShipsMap ', contractShipsMap);
 						data.forEach(row => {
-							data.ships = contractShipsMap[row.id].join(' ');
+							//console.log('row ', row);
+							let ships = contractShipsMap[row.contractId];
+							if(ships)
+								row.ships = ships.join(' ');
 						});
 
 						contractIds = null;
