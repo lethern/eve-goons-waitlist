@@ -414,22 +414,24 @@ function renderContracts_continue3(res, userProfile, sideBarSelected, error, dat
 		let right = [];
 		let side = 0;
 		for (let elem of all) {
+			if (!elem.ship) continue;
 			if (elem.rented) {
-				if (side) right.push('');
+				if (side) right.push('_');
 				side = true;
 				left.push(elem.ship + ' ' +datetimeFormat(elem.date))
 			}
 			if (elem.returned) {
-				if (!side) left.push('');
+				if (!side) left.push('_');
 				side = 0;
 				right.push(elem.ship + ' ' + datetimeFormat(elem.date))
 			}
 		}
+		if (side) right.push('_');
 
 		//let rentedCounted = countElems(rented).join('\n');
-		renderData.push({ pilotName, left: left.join('\n'), right: right.join('\n') })
+		renderData.push({ pilotName, left: left.reverse().join('\n'), right: right.reverse().join('\n') })
 	}
 
-	console.log('render2 ', renderData.length, (error ? ' error ' + error : ''));
-	res.render('contractCheck2.njk', { userProfile, sideBarSelected, error, data: renderData, other });
+	console.log('render3 ', renderData.length, (error ? ' error ' + error : ''));
+	res.render('contractCheck3.njk', { userProfile, sideBarSelected, error, data: renderData, other });
 }
