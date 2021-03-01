@@ -256,7 +256,7 @@ exports.testList = function (req, res) {
 					});
 
 					//data = data.map(row => {
-					data = data.forEach(row => {
+					data.forEach(row => {
 						row.dateIssuedStr = datetimeFormat(row.dateIssued);
 						row.issuer = userDict[row.issuerId];
 						row.assignee = userDict[row.assigneeId];
@@ -267,23 +267,32 @@ exports.testList = function (req, res) {
 						//return { ...row, dateIssuedStr, issuer, assignee };
 					});
 
-					getContracts();
+					getContractShips();
 				});
 			}
 
-			function getContracts() {
+			function getContractShips() {
 				try {
-					cacheContracts.getContracts(corporationId, contractIds, (error, result) => {
+					cacheContracts.getContracts(corporationId, contractIds, (error, contractShips) => {
 						if (error) {
-							console.log('getContracts error');
+							console.log('getContractShips error');
 							params.error = error;
 							_continue();
 							return;
 						}
 						//contractIds
 
+						let contractShipsMap = {};
+						contractShips.forEach(elem => {
+							contractShipsMap[elem.id] = elem.ships;
+						});
+						//result [{ id: contract_id, ships }]
+						data.forEach(row => {
+							data.ships = contractShipsMap[row.id].join(' ');
+						});
+
 						contractIds = null;
-						getItems();
+						_continue();
 					});
 				} catch (e) {
 					console.log('getContracts exception');
@@ -293,14 +302,10 @@ exports.testList = function (req, res) {
 				
 			}
 
-			function getItems() {
-				console.log('calling getItems');
-				_continue();
-			};
-
 		}
 
 		function _continue() {
+			console.log('render ', data.length, ' error ' + params.error);
 			res.render('contractCheck.njk', { userProfile, sideBarSelected, error: params.error, data, other });
 			params = null;
 			data = null;
