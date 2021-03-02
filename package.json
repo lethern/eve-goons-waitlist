@@ -1,15 +1,15 @@
 {
   "name": "eve-goons-waitlist",
   "version": "2.0.0",
-  "description": "The ESI-enabled socket-based waitlist used by the Incursions squad in Goonfleet of Eve Online.",
+  "description": "The ESI-enabled socket-based waitlist for EVE Incursion",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "scheduler": "babel-node scheduler_index.js",
+    "scheduler": ",
     "build:docker": "docker build -t waitlist .",
     "start:docker": "docker run -it -v ${PWD}:/opt/goon_waitlist -v /opt/goon_waitlist/node_modules -p 3000:3000 --rm waitlist",
     "start:dockercmp": "docker-compose up",
-    "test": "jest"
+    "test": ""
   },
   "keywords": [
     "eve",
@@ -47,6 +47,5 @@
     "babel-cli": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "babel-preset-stage-2": "^6.24.1",
-    "jest": "^23.1.0"
   }
 }
