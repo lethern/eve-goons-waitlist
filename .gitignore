@@ -71,3 +71,7 @@ typings/
 # For any scratch files to run little tests
 scratch/
 *.json
+/obj
+/bin
+/waitlist.njsproj
+/waitlist.njsproj.user
