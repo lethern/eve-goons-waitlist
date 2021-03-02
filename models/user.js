@@ -111,7 +111,8 @@ module.exports = function() {
     * @params: {user}, target_id
     * @return: cb(status)
     */
-	module.showInfo = function(user, targetID, cb) {
+	module.showInfo = function (user, targetID, cb) {
+		/*
 		module.getRefreshToken(user.characterID, function(accessToken){	
 			esi.characters(user.characterID, accessToken).window.info(targetID).then(result => {
 				cb("OK");
@@ -120,13 +121,15 @@ module.exports = function() {
 				cb(err)
 			});
 		})
+		*/
 	}
 
     /*
     * @params: {user}, target_id
     * @return: cb(status)
     */
-	module.openMarketWindow = function(user, targetID, cb) {
+	module.openMarketWindow = function (user, targetID, cb) {
+		/*
 		module.getRefreshToken(user.characterID, function(accessToken){
 			esi.characters(user.characterID, accessToken).window.market(targetID).then(result => {
 				cb("OK");
@@ -135,6 +138,7 @@ module.exports = function() {
 				cb(err)
 			});	
 		})
+		*/
 	}	
 
 	/*
