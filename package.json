@@ -22,7 +22,7 @@
     "body-parser": "^1.18.2",
     "connect-mongo": "^2.0.1",
     "cookie-parser": "^1.4.3",
-    "eve-swagger": "github:lethern/eve-swagger-js",
+    "eve-swagger": "github:CodesignDev/eve-swagger-js",
     "eve_swagger_interface": "github:lethern/eve-swagger2",
     "express": "^4.16.2",
     "express-longpoll": "0.0.4",
