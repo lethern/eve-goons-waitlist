@@ -99,4 +99,8 @@ const contractCheck = require('./controllers/contractCheck.js');
 	router.get('/test/contract-check2', contractCheck.testList2);
 	router.get('/test/contract-check3', contractCheck.testList3);
 
+	router.post('/test/contract-check', contractCheck.testList);
+	router.post('/test/contract-check2', contractCheck.testList2);
+	router.post('/test/contract-check3', contractCheck.testList3);
+
 	module.exports = router;

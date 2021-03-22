@@ -11,6 +11,17 @@ const ESI2_defaultClient = ESI2.ApiClient.instance;
 const ContractsApi = new ESI2.ContractsApi();
 const UniverseApi = new ESI2.UniverseApi();
 
+
+function dateFormat(date) {
+	if (isNaN(date)) return undefined;
+	var mm = date.getMonth() + 1; // getMonth() is zero-based
+	var dd = date.getDate();
+
+	return (dd > 9 ? '' : '0') + dd + '.' +
+		(mm > 9 ? '' : '0') + mm + '.' +
+		date.getFullYear();
+}
+
 function datetimeFormat (date) {
 	var mm = date.getMonth() + 1; // getMonth() is zero-based
 	var dd = date.getDate();
@@ -23,6 +34,15 @@ function datetimeFormat (date) {
 		(hh > 9 ? '' : '0') + hh + ':' +
 		(min > 9 ? '' : '0') + min;
 };
+
+function parseDate(dateStr) {
+	if (!dateStr) return undefined;
+	var parts = dateStr.split(".");
+	if (parts.length != 3) return undefined;
+	return new Date(parseInt(parts[2], 10),
+		parseInt(parts[1], 10) - 1,
+		parseInt(parts[0], 10));
+}
 
 
 
@@ -165,6 +185,19 @@ function renderContracts(req, res, mode) {
 	let characterID = 2112992068; // Jagger01
 	let corporationId = 98119924; // dgiad
 
+	let date_from = parseDate(req.body.date_from);
+	let date_to = parseDate(req.body.date_to);
+	
+	if (isNaN(date_from)) date_from = undefined;
+	if (isNaN(date_to)) date_to = undefined;
+
+	let date_to_filter = date_to;
+	//if (!isNaN(date_to_filter)) date_to_filter.setDate(date_to_filter.getDate() + 1);
+
+	if (!isNaN(date_from)) date_from.setHours(13);
+	if (!isNaN(date_to_filter)) date_to_filter.setHours(13);
+
+	console.log('filter from ' + date_from + ' to ' + date_to_filter)
 	user.getRefreshToken(characterID, function (accessToken) {
 		if (!accessToken) {
 			let error = "contractCheck.testList: Could not get an accessToken"
@@ -239,8 +272,14 @@ function renderContracts(req, res, mode) {
 			let userIDs = [];
 			let contractIds = [];
 
-			data = data.sort((a, b) => b.dateIssued - a.dateIssued).slice(0, 1000);
-			
+			data = data.sort((a, b) => b.dateIssued - a.dateIssued);//.slice(0, 1000);
+			data = data.filter(row => {
+				let ok = true;
+				if (!isNaN(date_from) && row.dateIssued < date_from) ok = false;
+				if (!isNaN(date_to_filter) && row.dateIssued > date_to_filter) ok = false;
+				return ok;
+			});
+
 			data.forEach(row => {
 				if (row.origin.issuerId) {
 					if (!userIDs.includes(row.origin.issuerId)) userIDs.push(row.origin.issuerId);
@@ -318,22 +357,24 @@ function renderContracts(req, res, mode) {
 		}
 
 		function _continue() {
+			let date = new Date(2021, 1, 27);
+
 			if (mode == 1) {
 				console.log('render ', data.length, (params.error ? ' error ' + params.error : ''));
-				res.render('contractCheck.njk', { userProfile, sideBarSelected, error: params.error, data, other });
+				res.render('contractCheck.njk', { userProfile, sideBarSelected, error: params.error, data, other, from: dateFormat(date_from), to: dateFormat(date_to) });
 				params = null;
 				data = null;
 				other = null;
 			} else if (mode == 2) {
-				renderContracts_continue2(res, userProfile, sideBarSelected, params.error, data, other);
+				renderContracts_continue2(res, userProfile, sideBarSelected, params.error, data, other, dateFormat(date_from), dateFormat(date_to));
 			} else if (mode == 3) {
-				renderContracts_continue3(res, userProfile, sideBarSelected, params.error, data, other);
+				renderContracts_continue3(res, userProfile, sideBarSelected, params.error, data, other, dateFormat(date_from), dateFormat(date_to));
 			}
 		}
 	};
 }
 
-function renderContracts_continue2(res, userProfile, sideBarSelected, error, data, other) {
+function renderContracts_continue2(res, userProfile, sideBarSelected, error, data, other, from, to) {
 	let renderData = [];
 
 	let pilots = {};
@@ -356,7 +397,7 @@ function renderContracts_continue2(res, userProfile, sideBarSelected, error, dat
 	}
 
 	console.log('render2 ', renderData.length, (error ? ' error ' + error : ''));
-	res.render('contractCheck2.njk', { userProfile, sideBarSelected, error, data: renderData, other });
+	res.render('contractCheck2.njk', { userProfile, sideBarSelected, error, data: renderData, other, from, to });
 }
 
 function flatten(arr) {
@@ -386,10 +427,11 @@ function countElems(arr) {
 }
 
 
-function renderContracts_continue3(res, userProfile, sideBarSelected, error, data, other) {
+function renderContracts_continue3(res, userProfile, sideBarSelected, error, data, other, from, to) {
 	let renderData = [];
 
 	let pilots = {};
+	
 	data.forEach(row => {
 		if (row.assignee == 'DGIAD') {
 			if (!pilots[row.issuer]) pilots[row.issuer] = { returned: [], rented: [] };
@@ -433,5 +475,5 @@ function renderContracts_continue3(res, userProfile, sideBarSelected, error, dat
 	}
 
 	console.log('render3 ', renderData.length, (error ? ' error ' + error : ''));
-	res.render('contractCheck3.njk', { userProfile, sideBarSelected, error, data: renderData, other });
+	res.render('contractCheck3.njk', { userProfile, sideBarSelected, error, data: renderData, other, from, to });
 }

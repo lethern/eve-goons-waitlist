@@ -17,16 +17,28 @@
 						<a href="https://eve-waitlist.glitch.me/test/contract-check2">check 2</a>
 						<a href="https://eve-waitlist.glitch.me/test/contract-check3">check 3</a>
 					</div>
+
+					<form action="/test/contract-check" method="POST" role="form">
+						<div class="form-group form-inline">
+							<label for="date_from">From:</label>
+							<input type="text" id="date_from" name="date_from" class="form-control p-1" autocomplete="off" placeholder="dd.mm.yyyy" autofocus {% if from %} value="{{ from }}"{% endif %}/>
+							<label for="date_from">To:</label>
+							<input type="text" id="date_to" name="date_to" class="form-control p-1" autocomplete="off" placeholder="dd.mm.yyyy" {% if to %} value="{{ to }}"{% endif %}/>
+							<button class="btn btn-success" type="submit"><i class="fas fa-edit"></i>Filter</button>
+						</div>
+					</form>
+
+
 					<span>{{ error if error }}</span>
 					<span class='refresh'>Next refresh: </span><span id='refresh_time' class='refresh'></span>
 
                     <table id="example" class="table-striped" style="width:100%">
                         <thead>
                             <tr>
-                                <th>Date issued</th>
-                                <th>Issuer</th>
-								<th>Assignee</th>
-								<th>Ship</th>
+                                <th style="width: 160px;">Date issued</th>
+                                <th style="width: 200px;">Issuer</th>
+								<th style="width: 200px;">Assignee</th>
+								<th style="width: 500px;">Ship</th>
                                 <th>Price</th>
 								<th>Status</th>
 								<th>Type</th>

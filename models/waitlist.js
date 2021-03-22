@@ -189,7 +189,7 @@ module.exports = function (setup) {
 	module.timers = function () {
 		//TODO: Replace this with a proper fleet lookup method that uses the expiry and checks for errors
 		//TODO: Error checking doesn't work due to how ESI module handles errors
-		setTimeout(lookup, 60*1000)
+		//setTimeout(lookup, 60*1000)
 
 		function lookup() {
 				db.find().forEach(function (doc) {
