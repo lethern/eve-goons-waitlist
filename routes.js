@@ -12,6 +12,9 @@ const waitlistController = require('./controllers/waitlistController.js');
 const fleetsController = require('./controllers/fleetController.js');
 //
 const contractCheck = require('./controllers/contractCheck.js');
+const fitsManager = require('./controllers/fitsManager.js');
+const skillsCheck = require('./controllers/skillsCheck.js');
+
 
 	//Public Pages
 	router.get('/', waitlistController.index);
@@ -102,5 +105,10 @@ const contractCheck = require('./controllers/contractCheck.js');
 	router.post('/test/contract-check', contractCheck.testList);
 	router.post('/test/contract-check2', contractCheck.testList2);
 	router.post('/test/contract-check3', contractCheck.testList3);
+
+	router.get('/test/fits-manager', fitsManager.test);
+	router.post('/test/fits-manager', fitsManager.send);
+
+	router.get('/test/skills-check', skillsCheck.index);
 
 	module.exports = router;

@@ -1,0 +1,61 @@
+{% include "./partials/header.njk" -%}
+{% include "./partials/nav.njk" %}
+
+<style>
+.S1{ background: url(https://cdn.glitch.com/3e435ab2-f262-4215-90ec-db28a2bcf3e5%2Fwh1.png?v=1616605877635); background-repeat: no-repeat; background-size: 28px; width: 28px; height: 28px; display: inline-block !important; vertical-align: bottom; margin-right: 4px; }
+.S2{ background: url(https://cdn.glitch.com/3e435ab2-f262-4215-90ec-db28a2bcf3e5%2Fwh2.png?v=1616605886100); background-repeat: no-repeat; background-size: 28px; width: 28px; height: 28px; display: inline-block !important; vertical-align: bottom; margin-right: 4px; }
+.S3{ background: url(https://cdn.glitch.com/3e435ab2-f262-4215-90ec-db28a2bcf3e5%2Fwh3.png?v=1616605891977); background-repeat: no-repeat; background-size: 28px; width: 28px; height: 28px; display: inline-block !important; vertical-align: bottom; margin-right: 4px; }
+.S4{ background: url(https://cdn.glitch.com/3e435ab2-f262-4215-90ec-db28a2bcf3e5%2Fwh4.png?v=1616605896972); background-repeat: no-repeat; background-size: 28px; width: 28px; height: 28px; display: inline-block !important; vertical-align: bottom; margin-right: 4px; }
+.S5{ background: url(https://cdn.glitch.com/3e435ab2-f262-4215-90ec-db28a2bcf3e5%2Fwh5.png?v=1616605900960); background-repeat: no-repeat; background-size: 28px; width: 28px; height: 28px; display: inline-block !important; vertical-align: bottom; margin-right: 4px; }
+span{
+display: inline !important;
+}
+</style>
+
+<div class="page-content {{ "active" if userProfile.settings.smSideNav == true }}">
+<div class="page-header">
+    <div class="container-fluid">
+    <h2 class="h5 no-margin-bottom">Skills check</h2>
+    </div>
+</div>
+<section class="no-padding-top padding-bottom">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="statistic-block block">
+
+					<span>{{ error if error }}</span>
+
+
+					{% for fit in data %}
+					<h3>{{ fit.name }}</h3>
+					<table id="example" class="table-striped">
+                        <thead>
+                            <tr>
+                                <th style="width: 250px;"></th>
+                                <th style="width: 60px;"></th>
+								<th style="width: 60px;"></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in fit.skills %}
+                            <tr>
+                                <td><span style="{{ "color: #c81b1b" if (row.level > row.userLevel) }}">{{ row.name }}</span></td>
+								<td style="text-align: center;"><span class="S{{row.userLevel}}"></span><span style="{{ "color: #c81b1b" if (row.level > row.userLevel) }}">{{ row.userLevel }}</span></td>
+								<td style="text-align: center;"><span class="S{{row.level}}"></span>{{ row.level }}</td>
+								
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table> 
+					<br />
+					{% endfor %}
+
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.16/fh-3.1.3/datatables.min.css"/>
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.16/fh-3.1.3/datatables.min.js"></script>
+{%- include "./partials/footer.njk" %}
