@@ -14,6 +14,7 @@ const fleetsController = require('./controllers/fleetController.js');
 const contractCheck = require('./controllers/contractCheck.js');
 const fitsManager = require('./controllers/fitsManager.js');
 const skillsCheck = require('./controllers/skillsCheck.js');
+const newFleetManager = require('./controllers/newFleetManager.js');
 
 
 	//Public Pages
@@ -110,5 +111,8 @@ const skillsCheck = require('./controllers/skillsCheck.js');
 	router.post('/test/fits-manager', fitsManager.send);
 
 	router.get('/test/skills-check', skillsCheck.index);
+
+	// new fleet list
+	router.get('/manage_fleet/:fleetID/', newFleetManager.index);
 
 	module.exports = router;

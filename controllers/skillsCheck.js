@@ -67,6 +67,7 @@ exports.index = function (req, res) {
 
 				let allSkills = [].concat.apply([], arrays);
 				allSkills.forEach(s => {
+					if(!s) return;
 					let id = s.id;
 					let level = s.level;
 					if (!skillsCache[id]) {

@@ -1,0 +1,21 @@
+{% include "./partials/header.njk" -%}
+{% include "./partials/nav.njk" %}
+
+<script src="/includes/js/fleetManager.js"></script>
+<link rel="stylesheet" href="includes/css/fleetManager.css">
+
+<!-- Page Content -->
+<div class="page-content {{ "active" if userProfile.settings.smSideNav == true }}">
+<div class="page-header">
+	
+</div>
+
+<section class="no-padding-top no-padding-bottom">
+	<div class="container-fluid">
+	<!-- Upper Fleet Panel -->
+	<div class="row statistic-block block" id="main">
+		<div>test</div>
+	</div>
+</section>
+</div>
+{%- include "./partials/footer.njk" %}

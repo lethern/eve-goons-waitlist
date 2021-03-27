@@ -1,0 +1,12 @@
+
+.fleetTable{
+	display: table;
+}
+
+.fleetRow {
+	display: table-row;
+}
+
+.fleetCell {
+	display: table-cell;
+}
