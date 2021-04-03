@@ -1,8 +1,8 @@
 {% include "./partials/header.njk" -%}
 {% include "./partials/nav.njk" %}
 
-<script src="/includes/js/fleetManager.js"></script>
-<link rel="stylesheet" href="includes/css/fleetManager.css">
+<script src="/includes/js/fleetManager.js?v=1"></script>
+<link rel="stylesheet" href="/includes/css/fleetManager.css?v=1">
 
 <!-- Page Content -->
 <div class="page-content {{ "active" if userProfile.settings.smSideNav == true }}">
@@ -12,9 +12,8 @@
 
 <section class="no-padding-top no-padding-bottom">
 	<div class="container-fluid">
-	<!-- Upper Fleet Panel -->
-	<div class="row statistic-block block" id="main">
 		<div>test</div>
+		<div class="statistic-block block" id="main"></div>
 	</div>
 </section>
 </div>

@@ -1,12 +1,88 @@
 
 .fleetTable{
 	display: table;
+	width: 1000px;
 }
+
+.fleetCaption {
+	font-weight: bold;
+	display: table-caption;
+	background-color: #e9e9e9;
+	text-align: center;
+	padding: 5px;
+	line-height: 20px;
+	font-size: 18px;
+	color: #CA8327;
+}
+
+.fleetColGroup {
+	display: table-column-group;
+}
+.fleetColumn {
+	display: table-column;
+}
+
+.fleetHeadGroup{
+	display: table-header-group;
+}
+.fleetHeader {
+	display: table-cell;
+	text-align: center;
+	vertical-align: bottom;
+}
+
+.fleetBody {
+	display: table-row-group;
+}
+
 
 .fleetRow {
 	display: table-row;
 }
 
-.fleetCell {
+.fleetRow > div{
 	display: table-cell;
+	white-space: pre-line;
+	padding: 6px 15px;
+	color: white;
+}
+
+.rowMain:nth-child(odd) {
+	background-color: #575757;
+}
+
+.rowMain:nth-child(even) {
+	background-color: #646464;
+}
+
+.rowAlt:nth-child(even) {
+	background-color: #5f6c6a;
+}
+
+.rowAlt:nth-child(odd) {
+	background-color: #667573;
+}
+
+.orangeSquad{
+	color: #feb17b;
+}
+
+.greenSquad{
+	color:#abff8e;
+}
+
+.blueSquad {
+	color: #bde1ff;
+}
+
+.textButton {
+	cursor: pointer;
+}
+
+.altName {
+	display: inline-block;
+	color: #e5f2f1;
+	background-color: #6c8b87;
+	padding: 2px 8px;
+	margin-left: 20px;
 }

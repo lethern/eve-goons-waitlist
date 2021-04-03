@@ -160,7 +160,6 @@ function moveToSquad(event) {
 	let pilotData = squad_down.pilotData;
 	let targetSquad = squad_down.targetSquad;
 	if (!targetSquad) return;
-	//alert('moving to ' + targetSquad);
 
 	squad_down.textContent = 'changing...';
 	squad_down.targetSquad = null;
@@ -184,38 +183,40 @@ function addRow(pilotData) {
 	let cells = {};
 	pilotData.cellsDOM = cells;
 
-	cells['name'] =		addCell(row, model.name);
-	cells['squad'] = addCell(row, '');//model.squad);
-	cells['squadBtn'] = addCell(row, '');
-	cells['shipsSub'] = addCell(row, model.shipsSub.join('\n'));
-	cells['shipsAll'] =	addCell(row, model.shipsAll.join('\n'));
-	cells['timeActive'] =	addCell(row, model.timeActive);
-	cells['timeWaitlist'] =	addCell(row, model.timeWaitlist);
-	cells['timeTotal'] =	addCell(row, model.timeTotal);
-
-	//, 
-	//, 'orangeSquad'
-	cells['squad_up'] = addCell(cells['squad'], model.squad);
-	if (globalData.currentSquad && globalData.currentSquad == model.squad) {
-		cells['squad_up'].classList.add('greenSquad');
-		cells['squad_down'] = addButton(cells['squad'], globalData.waitlistSquad + ' <-', moveToSquad, 'blueSquad');
-		cells['squad_down'].targetSquad = globalData.waitlistSquad;
-	} else {
-		cells['squad_up'].classList.add('orangeSquad');
-		cells['squad_down'] = addButton(cells['squad'], '-> ' + globalData.currentSquad, moveToSquad, 'blueSquad');
-		cells['squad_down'].targetSquad = globalData.currentSquad;
+	cells['name'] =		addCell(row, '');
+	cells['name_up'] = addCell(cells['name'], '');
+	if (model.main) {
+		cells['name_down'] = addCell(cells['name'], '', 'altName');
 	}
+
+	cells['squad'] =	addCell(row, '');
+	cells['squad_up'] = addCell(cells['squad'], '');
+	cells['squad_down'] = addButton(cells['squad'], '', moveToSquad, 'blueSquad');
 	cells['squad_down'].pilotData = pilotData;
+
+	cells['squadBtn'] = addCell(row, '');
+	cells['shipsSub'] = addCell(row, '');
+	cells['shipsAll'] =	addCell(row, '');
+	cells['timeActive'] =	addCell(row, '');
+	cells['timeWaitlist'] =	addCell(row, '');
+	cells['timeTotal'] =	addCell(row, '');
+
+	
 
 	if (!model.main) row.classList.add('rowMain')
 	else row.classList.add('rowAlt');
+
+	updateRow(pilotData);
 };
 
 
 function updateRow(pilotData) {
 	let cells = pilotData.cellsDOM;
 	let model = pilotData.model;
-	cells['name'].textContent = model.name;
+	cells['name_up'].textContent = model.name;
+	if (model.main) {
+		cells['name_down'].textContent = model.main;
+	}
 	cells['shipsSub'].textContent = model.shipsSub.join('\n');
 	cells['shipsAll'].textContent = model.shipsAll.join('\n');
 	cells['timeActive'].textContent = model.timeActive;
