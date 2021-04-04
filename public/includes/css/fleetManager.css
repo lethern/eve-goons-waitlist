@@ -1,7 +1,7 @@
 
 .fleetTable{
 	display: table;
-	width: 1000px;
+	width: 1100px;
 }
 
 .fleetCaption {
@@ -29,6 +29,7 @@
 	display: table-cell;
 	text-align: center;
 	vertical-align: bottom;
+	color: #a1a4aa;
 }
 
 .fleetBody {
@@ -84,5 +85,44 @@
 	color: #e5f2f1;
 	background-color: #6c8b87;
 	padding: 2px 8px;
-	margin-left: 20px;
+	/*margin-left: 20px;*/
 }
+
+.altNameImg {
+	display: inline-block;
+	width: 13px;
+	height: 18px;
+	background-image: url(../img/arr_up.png);
+	margin-left: 7px;
+	margin-right: 3px;
+}
+
+.pilotBtns {
+	margin-top: 5px;
+	width: 20px;
+	height: 20px;
+	border-radius: 10px;
+	background-color: #aaaaaa;
+	text-align: center;
+	line-height: 11px;
+	padding-right: 0px !important;
+}
+
+/* override */
+.dropdown-menu {
+	left: 0px !important;
+	min-width: 150px !important;
+	margin-top: 0px !important;
+	border-radius: 3px;
+	background-color: #797878;
+	color: #e7e9ee;
+}
+
+.dropdown-menu > .textButton {
+	white-space: nowrap;
+	padding: 1px 5px;
+}
+.dropdown-menu > .textButton:hover {
+	background-color: #9d9d9d;
+}
+

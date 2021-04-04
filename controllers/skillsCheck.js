@@ -35,7 +35,7 @@ exports.index = function (req, res) {
 		//evesso.accessToken = accessToken;
 
 		SkillsApi.getCharactersCharacterIdSkills(characterId, { token: accessToken }, callback);
-	});
+	}, { req, res });
 
 	function callback(error, data, response) {
 		if (error) {

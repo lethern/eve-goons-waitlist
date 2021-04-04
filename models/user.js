@@ -54,11 +54,19 @@ module.exports = function() {
     * @return: location{system_id, system_name}
     * @todo: Use the cache for the systems 
     */
-	module.getRefreshToken = function(characterID, tokenCallback){
+	module.getRefreshToken = function(characterID, tokenCallback, reqResObj){
 		db.findOne({ characterID: characterID }, function (err, doc) {
 			if (doc.invalidToken) {
 				log.error("user.getRefreshToken - invalidToken: ", { pilot: characterID });
-				//tokenCallback(null);
+				if (reqResObj && reqResObj.res && reqResObj.req) {
+					if (reqResObj.req.user.characterID == characterID) {
+						reqResObj.req.logout();
+						reqResObj.res.redirect('/');
+						return;
+						//reqResObj.res.status(401).render("statics/login.html");
+					}
+				}
+				tokenCallback(null);
 				return;
 				//doc.refreshToken = null;
 			}

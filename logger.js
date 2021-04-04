@@ -95,8 +95,8 @@ const getWinstonExceptionTransports = () => {
 };
 
 const getLabel = (filename) => {
-  const fragments = filename.split('/');
-  return `${fragments[fragments.length-2]}/${fragments.pop()}`;
+	const fragments = (filename.indexOf('/') > -1) ? filename.split('/') : filename.split('\\');
+	return `${fragments[fragments.length-2]}/${fragments.pop()}`;
 };
 
 const logger = createLogger({

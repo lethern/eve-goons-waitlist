@@ -71,7 +71,7 @@ exports.invite = function(req, res){
 
                 res.status(400).send(resStr);
 			});
-		})
+		}, { req, res })
     })
 }
 

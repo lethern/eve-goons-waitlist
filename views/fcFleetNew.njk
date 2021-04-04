@@ -1,9 +1,14 @@
 {% include "./partials/header.njk" -%}
 {% include "./partials/nav.njk" %}
 
+<script src="/includes/js/socket.io.min.js"></script>
 <script src="/includes/js/fleetManager.js?v=1"></script>
 <link rel="stylesheet" href="/includes/css/fleetManager.css?v=1">
 
+<script>
+	window.SERV_pilots = '{{ pilots | safe }}';
+	window.SERV_fleetId = {{ fleetId | safe }};
+</script>
 <!-- Page Content -->
 <div class="page-content {{ "active" if userProfile.settings.smSideNav == true }}">
 <div class="page-header">
@@ -12,8 +17,10 @@
 
 <section class="no-padding-top no-padding-bottom">
 	<div class="container-fluid">
-		<div>test</div>
-		<div class="statistic-block block" id="main"></div>
+		<div class="statistic-block block" >
+			{{ error if error }}
+			<div id="main"></div>
+		</div>
 	</div>
 </section>
 </div>

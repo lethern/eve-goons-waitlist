@@ -159,7 +159,7 @@ exports.testList_x = function (req, res) {
 		};
 		UniverseApi.getUniverseGroupsGroupId(groupId, opts, callback);
 
-	});
+	}, res);
 };
 
 exports.testList = function (req, res) {
@@ -244,7 +244,7 @@ function renderContracts(req, res, mode) {
 		};
 
 		ContractsApi.getCorporationsCorporationIdContracts(corporationId, opts, callback);
-	})
+	}, res)
 
 	function genPage(params) {
 		let data = null;

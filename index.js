@@ -40,8 +40,8 @@ database.connect(function () {
 	const waitlist = require('./models/waitlist.js')(setup);
 
 	//Start timers
-	fleets.timers();
-	waitlist.timers();
+	//fleets.timers();
+	//waitlist.timers();
 
 	//Configure Passport's oAuth
 	var oauthStrategy = new OAuth2Strategy({
@@ -136,10 +136,20 @@ database.connect(function () {
 	});	
 	*/
 
+	// websocket
+	const http = require('http').Server(app);
+
+	require('./controllers/fleetWebsocket.js')(http);
+
 	//Configure Express webserver
-	app.listen(setup.settings.port, function listening() {
-		log.info('Express online and accepting connections');
+	//app.listen(setup.settings.port, function listening() {
+	//	log.info('Express online and accepting connections');
+	//});
+
+	http.listen(setup.settings.port, () => {
+		log.info('Server online');
 	});
+	
 });
 
 

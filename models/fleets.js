@@ -70,7 +70,7 @@ module.exports = function (setup) {
                 console.log(err)
                 if(err) cb(false);
             });
-        })
+		})
     }
 
     /*
@@ -229,7 +229,7 @@ module.checkForDuplicates = function () {
 module.timers = function () {
     //TODO: Replace this with a proper fleet lookup method that uses the expiry and checks for errors
     //TODO: Error checking doesn't work due to how ESI module handles errors
-    setTimeout(lookup, 10*1000)
+    //setTimeout(lookup, 10*1000)
 
     function lookup() {
         var checkCache = [];
@@ -293,7 +293,7 @@ module.timers = function () {
 					cb(null, fleetID, fleetObject);
 				}
             })
-        })
+		})
     }
 
 

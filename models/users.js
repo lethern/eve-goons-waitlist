@@ -13,7 +13,7 @@ module.exports = function (setup) {
 	module.findOrCreateUser = function (users, refreshToken, characterDetails, cb) {
 		//Update the users refresh token
 		if(refreshToken){
-			db.updateOne({characterID: characterDetails.CharacterID}, {$set: {refreshToken: refreshToken, invalidToken: false}}, function(err, result){
+			db.updateOne({ characterID: characterDetails.CharacterID }, { $set: { refreshToken: refreshToken, invalidToken: false, x: false}}, function(err, result){
 				console.info("users.findOrCreateUser: Updating refreshToken for " + characterDetails.CharacterName);
 			})
 		}//Check if the user exists
@@ -282,6 +282,13 @@ module.exports = function (setup) {
 				log.error("users.checkSkills: ", { err });
 				cb(err)
 			});
+		})
+	}
+
+	module.findMultiple = function (ids,cb) {
+		db.find({ "characterID": { $in: ids } }).toArray(function (err, docs) {
+			if (err) log.error("user.findMultiple: Error ", { err });
+			cb(docs);
 		})
 	}
 

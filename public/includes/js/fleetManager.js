@@ -1,3 +1,4 @@
+
 function generateTestModel() {
 	return [{
 		name: 'lethern Zell',
@@ -7,7 +8,9 @@ function generateTestModel() {
 		shipsAll: ['gnosis', 'praxi'],
 		timeActive: '1:30',
 		timeWaitlist: '-',
-		timeTotal: '1:38'
+		timeTotal: '1:38',
+		ship: 'Basilisk',
+		system: 'Jita',
 	},{
 		name: 'saelen saal',
 		main: 'lethern Zell',
@@ -16,7 +19,9 @@ function generateTestModel() {
 		shipsAll: ['gnosis', 'praxi'],
 		timeActive: '0:15',
 		timeWaitlist: '0:30',
-		timeTotal: '1:38'
+		timeTotal: '1:38',
+		ship: 'Capsule',
+		system: 'Hek',
 	},{
 		name: 'Johny Bravo',
 		main: null,
@@ -25,7 +30,9 @@ function generateTestModel() {
 		shipsAll: [],
 		timeActive: '-',
 		timeWaitlist: '0:10',
-		timeTotal: '0:10'
+		timeTotal: '0:10',
+		ship: 'Gila',
+		system: 'Jita',
 	},{
 		name: 'Bob bobman',
 		main: null,
@@ -34,7 +41,9 @@ function generateTestModel() {
 		shipsAll: [],
 		timeActive: '-',
 		timeWaitlist: '0:17',
-		timeTotal: '0:17'
+		timeTotal: '0:17',
+		ship: 'Gila',
+		system: 'Jita',
 	},{
 		name: 'Alice bobman',
 		main: 'Bob bobman',
@@ -43,7 +52,9 @@ function generateTestModel() {
 		shipsAll: [],
 		timeActive: '-',
 		timeWaitlist: '0:17',
-		timeTotal: '0:17'
+		timeTotal: '0:17',
+		ship: 'Capsule',
+		system: 'Jita',
 	},{
 		name: 'Denise bobman',
 		main: 'Bob bobman',
@@ -52,9 +63,10 @@ function generateTestModel() {
 		shipsAll: [],
 		timeActive: '-',
 		timeWaitlist: '0:17',
-		timeTotal: '0:17'
-	}
-		];
+		timeTotal: '0:17',
+		ship: 'Gila',
+		system: 'Jita',
+	}];
 };
 
 let globalData = {
@@ -72,21 +84,60 @@ pilotData = {
 		timeActive
 		timeWaitlist
 		timeTotal
+		ship
+		system
 	}
 	rowDOM
 	cellsDOM
 }
  */
 
+let socket = io({ autoConnect: false });
+
+socket.on("connect_error", (err) => {
+	if (err.message === "invalid username") {
+		alert('Connection error');
+	}
+});
+
+socket.auth = { username: "Bob" };
+socket.connect();
+
 $(document).ready(() => {
 	let main = document.getElementById('main');
 
-	setupFleetTable();
-	
-	globalData.currentSquad= 'Fleet 1';
-	globalData.waitlistSquad= 'Waitlist';
+	//
+	socket.emit('listenForFleet', { fleetId: SERV_fleetId });
 
-	let model = generateTestModel();
+	socket.on('ACK', (fleetId) => {
+		alert(fleetId);
+	});
+
+	socket.on('fleet_data', (args) => {
+		let model = args.pilots;
+
+		//let model = generateTestModel();
+		let data = [];
+		for (let entry in model) {
+			let pilotData = {};
+			pilotData.model = model[entry];
+
+			addRow(pilotData);
+
+			data.push(pilotData);
+		}
+	});
+	//
+
+	setupFleetTable();
+
+
+	globalData.currentSquad = 'Fleet 1';
+	globalData.waitlistSquad = 'Waitlist';
+
+	/*
+	let model = JSON.parse(SERV_pilots);
+	//let model = generateTestModel();
 	let data = [];
 	for (let entry in model) {
 		let pilotData = {};
@@ -96,7 +147,7 @@ $(document).ready(() => {
 
 		data.push(pilotData);
 	}
-	
+	*/
 })
 
 function setupFleetTable() {
@@ -112,8 +163,8 @@ function setupFleetTable() {
 	ths.classList.add('fleetHeadGroup');
 
 
-	let columns = ['Pilot', 'Squad', '', 'Will fly', 'Can fly', 'Time active', 'Time waitlist', 'Time total'];
-	let widths = [250, 150, 50, 120, 120, 60, 60, 60];
+	let columns = ['Pilot', 'Squad', '', 'Ship', 'System', 'Will fly', 'Can fly', 'Time active', 'Time waitlist', 'Time total'];
+	let widths = [200, 110, 50, 100, 80, 100, 100, 60, 60, 60];
 	for (let i in columns) {
 		let column = document.createElement('div');
 		column.classList.add('fleetColumn');
@@ -172,6 +223,42 @@ function moveToSquad(event) {
 	};
 };
 
+function showBtnMenu(event) {
+	let btnDiv = event.target;
+
+	//btnDiv.menuDOM.style.display = 'block';
+	//$(btnDiv.dropmenuDOM).dropdown();
+}
+
+function setupPilotBtns(pilotData) {
+	let btnsDiv = pilotData.cellsDOM['squadBtn'];
+	let dropmenu = document.createElement('div');
+	dropmenu.classList.add('dropdown');
+	btnsDiv.appendChild(dropmenu);
+
+
+	let btn = addButton(dropmenu, '...', showBtnMenu, 'pilotBtns');
+	btn.classList.add('dropdown-toggle');
+	btn.pilotData = pilotData;
+	btn.dropmenuDOM = dropmenu;
+	btn.setAttribute('data-toggle', "dropdown");
+
+	let menu = document.createElement('div');
+	menu.classList.add('dropdown-menu');
+	//menu.style.display = 'none';
+	dropmenu.appendChild(menu);
+
+	$(btn).dropdown();
+	
+	btn.menuDOM = menu;
+
+	if (!pilotData.model.main) {
+		addButton(menu, 'Connect to main');
+	}
+	//addButton(menu, '2');
+	// 
+}
+
 function addRow(pilotData) {
 	let model = pilotData.model;
 
@@ -186,6 +273,7 @@ function addRow(pilotData) {
 	cells['name'] =		addCell(row, '');
 	cells['name_up'] = addCell(cells['name'], '');
 	if (model.main) {
+		cells['name_down'] = addCell(cells['name'], '', 'altNameImg');
 		cells['name_down'] = addCell(cells['name'], '', 'altName');
 	}
 
@@ -195,13 +283,17 @@ function addRow(pilotData) {
 	cells['squad_down'].pilotData = pilotData;
 
 	cells['squadBtn'] = addCell(row, '');
+
+	cells['ship'] = addCell(row, '');
+	cells['system'] = addCell(row, '');
+
 	cells['shipsSub'] = addCell(row, '');
 	cells['shipsAll'] =	addCell(row, '');
 	cells['timeActive'] =	addCell(row, '');
 	cells['timeWaitlist'] =	addCell(row, '');
-	cells['timeTotal'] =	addCell(row, '');
-
+	cells['timeTotal'] = addCell(row, '');
 	
+	setupPilotBtns(pilotData);
 
 	if (!model.main) row.classList.add('rowMain')
 	else row.classList.add('rowAlt');
@@ -222,6 +314,8 @@ function updateRow(pilotData) {
 	cells['timeActive'].textContent = model.timeActive;
 	cells['timeWaitlist'].textContent = model.timeWaitlist;
 	cells['timeTotal'].textContent = model.timeTotal;
+	cells['ship'].textContent = model.ship;
+	cells['system'].textContent = model.system;
 
 	cells['squad_up'].textContent = model.squad;
 
