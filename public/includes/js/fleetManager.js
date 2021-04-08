@@ -73,61 +73,92 @@ let globalData = {
 	// currentSquad
 	// waitlistSquad
 };
-/*
-pilotData = {
-	model: {
-		name
-		main
-		squad
-		shipsSub
-		shipsAll
-		timeActive
-		timeWaitlist
-		timeTotal
-		ship
-		system
+
+// docs
+{
+	/*
+	pilotData = {
+		model: {
+			name
+			main
+			squad
+			shipsSub
+			shipsAll
+			timeActive
+			timeWaitlist
+			timeTotal
+			ship
+			system
+		}
+		rowDOM
+		cellsDOM
 	}
-	rowDOM
-	cellsDOM
+	 */
 }
- */
 
 let socket = io({ autoConnect: false });
 
 socket.on("connect_error", (err) => {
-	if (err.message === "invalid username") {
-		alert('Connection error');
-	}
+	console.log(`connect_error due to ${err.message}`);
+	//if (err.message === "invalid username") {
+	//	alert('Connection error');
+	//}
 });
 
-socket.auth = { username: "Bob" };
-socket.connect();
+socket.on("connect", () => {
+	socket.sendBuffer = [];
+
+	socket.emit('listenForFleet', { fleetId: SERV_fleetId });
+});
+
+
+// by pilot name
+let globalPilotsData = {};
+let main;
+let errorDiv;
+
+
+function onServerError(error) {
+	let msg = document.createElement('div');
+	msg.textContent = 'Error occured! ' + error;
+	errorDiv.innerHTML = '';
+	errorDiv.appendChild(msg);
+	errorDiv.style.display = 'block';
+
+	let btn = addButton(errorDiv, 'Retry', callback, 'errorBtn');
+	function callback() {
+		socket.emit('resetError', { fleetId: SERV_fleetId });
+		errorDiv.innerHTML = '';
+		errorDiv.style.display = 'none';
+	}
+};
 
 $(document).ready(() => {
-	let main = document.getElementById('main');
+	main = document.getElementById('main');
 
 	//
-	socket.emit('listenForFleet', { fleetId: SERV_fleetId });
-
-	socket.on('ACK', (fleetId) => {
-		alert(fleetId);
-	});
+	//socket.auth = { username: "Bob" };
 
 	socket.on('fleet_data', (args) => {
+		if (args.error) {
+			onServerError(args.error);
+			return;
+		}
+
 		let model = args.pilots;
 
+		model.sort((a, b) => a.name - b.name);
+
 		//let model = generateTestModel();
-		let data = [];
 		for (let entry in model) {
-			let pilotData = {};
-			pilotData.model = model[entry];
-
-			addRow(pilotData);
-
-			data.push(pilotData);
+			renderRow(model[entry]);
 		}
 	});
+
+	socket.connect();
 	//
+
+	setupErrorDiv();
 
 	setupFleetTable();
 
@@ -135,20 +166,43 @@ $(document).ready(() => {
 	globalData.currentSquad = 'Fleet 1';
 	globalData.waitlistSquad = 'Waitlist';
 
-	/*
-	let model = JSON.parse(SERV_pilots);
-	//let model = generateTestModel();
-	let data = [];
-	for (let entry in model) {
-		let pilotData = {};
-		pilotData.model = model[entry];
-
-		addRow(pilotData);
-
-		data.push(pilotData);
+	{
+		/*
+		let model = JSON.parse(SERV_pilots);
+		//let model = generateTestModel();
+		let data = [];
+		for (let entry in model) {
+			let pilotData = {};
+			pilotData.model = model[entry];
+	
+			addRow(pilotData);
+	
+			data.push(pilotData);
+		}
+		*/
 	}
-	*/
 })
+
+function setupErrorDiv() {
+	errorDiv = document.createElement('div');
+	errorDiv.classList.add('errorDiv');
+	errorDiv.style.display = 'none';
+	main.appendChild(errorDiv);
+}
+
+function renderRow(pilotModel) {
+	let name = pilotModel.name;
+	let obj = globalPilotsData[name];
+	if (obj) {
+		obj.model = pilotModel;
+		updateRow(obj);
+	} else {
+		obj = globalPilotsData[name] = {};
+		obj.model = pilotModel;
+		addRow(obj);
+	}
+}
+
 
 function setupFleetTable() {
 	let fleetTable = document.createElement('div');
@@ -164,7 +218,7 @@ function setupFleetTable() {
 
 
 	let columns = ['Pilot', 'Squad', '', 'Ship', 'System', 'Will fly', 'Can fly', 'Time active', 'Time waitlist', 'Time total'];
-	let widths = [200, 110, 50, 100, 80, 100, 100, 60, 60, 60];
+	let widths = [200, 150, 50, 100, 80, 100, 100, 60, 60, 60];
 	for (let i in columns) {
 		let column = document.createElement('div');
 		column.classList.add('fleetColumn');
@@ -305,6 +359,10 @@ function addRow(pilotData) {
 function updateRow(pilotData) {
 	let cells = pilotData.cellsDOM;
 	let model = pilotData.model;
+
+	let inFleet_mins= model.timeTotal;
+	let inFleet = Math.floor(inFleet_mins / 60) + "h " + (Math.round(inFleet_mins % 60) + '').padStart(2, '0') + 'm'
+
 	cells['name_up'].textContent = model.name;
 	if (model.main) {
 		cells['name_down'].textContent = model.main;
@@ -313,7 +371,7 @@ function updateRow(pilotData) {
 	cells['shipsAll'].textContent = model.shipsAll.join('\n');
 	cells['timeActive'].textContent = model.timeActive;
 	cells['timeWaitlist'].textContent = model.timeWaitlist;
-	cells['timeTotal'].textContent = model.timeTotal;
+	cells['timeTotal'].textContent = inFleet;
 	cells['ship'].textContent = model.ship;
 	cells['system'].textContent = model.system;
 

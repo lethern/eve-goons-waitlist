@@ -88,6 +88,14 @@ module.exports = function() {
 							db.updateOne({ 'characterID': characterID }, { $set: { invalidToken: true } }, function (err, result) {
 								if (err) log.error("user.getRefreshToken: Error for updateOne", { err, 'characterID': characterID });
 							});
+
+							if (reqResObj && reqResObj.res && reqResObj.req) {
+								if (reqResObj.req.user.characterID == characterID) {
+									reqResObj.req.logout();
+									reqResObj.res.redirect('/');
+									return;
+								}
+							}
 						}
 					}
 					tokenCallback(null);

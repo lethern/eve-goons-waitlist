@@ -65,6 +65,10 @@ module.exports = function (http, port) {
 				////// TODO zamienic na session id
 			}
 			//gFleetsData[fleetId].socket = socket;
+
+			if (gFleetsData[fleetId].hasError) {
+				socket.emit('fleet_data', { error: gFleetsData[fleetId].errorMsg });
+			}
 		});
 
 		socket.on('resetError', (params) => {
@@ -74,6 +78,7 @@ module.exports = function (http, port) {
 			if (!gFleetsData[fleetId]) return;
 			gFleetsData[fleetId].hasError = false;
 			gFleetsData[fleetId].errorsCount = 0;
+			gFleetsData[fleetId].errorMsg = null;
 			
 			console.log('resetError for ' + fleetId);
 		});
@@ -86,16 +91,13 @@ module.exports = function (http, port) {
 	const refresh_time = 6 * 1000;
 	setInterval(refreshFleets, refresh_time);
 	log.info('refreshFleets started at ' + refresh_time);
-
-	const refresh_wings_time = 120 * 1000;
-	setInterval(refreshFleetWings, refresh_wings_time);
-	log.info('refreshFleetWings started at ' + refresh_wings_time);
 };
 
 function initNewFleetsData() {
 	return {
 		toLoadSquads: new Set(),
 		errorsCount: 0,
+
 	}
 }
 
@@ -109,7 +111,8 @@ function refreshFleets() {
 		refreshFleet(fleetId);
 
 		if (gFleetsData[fleetId].toLoadSquads.size > 0) {
-			load
+			gFleetsData[fleetId].toLoadSquads.clear();
+			refreshFleetWings(fleetId);
 		}
 	}
 
@@ -393,6 +396,7 @@ function refreshFleet(fleetId) {
 		if (gFleetsData[fleetId].errorsCount >= 5) {
 			console.log('max error (5) for fleetId=' + fleetId, msg);
 			gFleetsData[fleetId].hasError = true;
+			gFleetsData[fleetId].errorMsg = msg;
 
 			io.to('fleet' + fleetId).emit('fleet_data', { error: msg });
 		}
@@ -402,18 +406,7 @@ function refreshFleet(fleetId) {
 
 
 
-
-function refreshFleetWings() {
-	if (io.engine.clientsCount == 0) return;
-	if (fleetWingsError) return;
-
-	for (let fleetId in gFleetsData) {
-		refreshFleetWings_single(fleetId);
-	}
-}
-
-
-function refreshFleetWings_single(fleetId) {
+function refreshFleetWings(fleetId) {
 	if (!checkFleetToken(fleetId, getFleetWings, onError)) return;
 
 	getFleetWings();
