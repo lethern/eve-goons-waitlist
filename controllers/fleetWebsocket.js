@@ -8,11 +8,13 @@ const ESI2 = require('eve_swagger_interface');
 
 const ESI2_defaultClient = ESI2.ApiClient.instance;
 const FleetsApi = new ESI2.FleetsApi();
+const UniverseApi = new ESI2.UniverseApi();
 
-let gIsWSgood = false;
-let gHasWSerror = false;
+let fleetWingsError = false;
 let gFleetsData = {};
+let gIDNames = {};
 let gUserNamesData = {};
+let gIDNames_toLoad = new Set();
 
 function diffArray(arr1, arr2) {
 	let a = new Set(arr1);
@@ -20,33 +22,30 @@ function diffArray(arr1, arr2) {
 	return [... new Set([...a].filter(x => !b.has(x)))];
 }
 
+let io;
 
 module.exports = function (http, port) {
 	
-	const io = raw_io(http);
+	io = raw_io(http);
 
-	io.use((socket, next) => {
-		if (!socket.handshake.auth) {
-			return next(new Error("invalid auth"));
-		}
-
-		const username = socket.handshake.auth.username;
-		if (!username) {
-			return next(new Error("invalid username"));
-		}
-		socket.username = username;
-		next();
-	});
+//	io.use((socket, next) => {
+//		if (!socket.handshake.auth) {
+//			return next(new Error("invalid auth"));
+//		}
+//
+//		const username = socket.handshake.auth.username;
+//		if (!username) {
+//			return next(new Error("invalid username"));
+//		}
+//		socket.username = username;
+//		next();
+//	});
 
 	io.on('connection', (socket) => {
 		console.log('a user connected');
 
 		socket.on('disconnect', () => {
 			console.log('user disconnected');
-
-			if (Object.keys(io.of("/").sockets).length == 0) {
-				gIsWSgood = false;
-			}
 		});
 
 		socket.on('listenForFleet', (params) => {
@@ -54,52 +53,127 @@ module.exports = function (http, port) {
 			if (!fleetId) return;
 
 			console.log('listenForFleet: ' + fleetId);
+			socket.join('fleet' + fleetId);
 
-			socket.broadcast.emit('ACK', fleetId);
+			//socket.broadcast.emit('ACK', fleetId);
 
 			if (!gFleetsData[fleetId]) {
-				gFleetsData[fleetId] = {};
+				gFleetsData[fleetId] = initNewFleetsData();
+				
 				////// TODO zamienic na session id
 				////// TODO zamienic na session id
 				////// TODO zamienic na session id
 			}
-			gFleetsData[fleetId].socket = socket;
-			gIsWSgood = true;
+			//gFleetsData[fleetId].socket = socket;
 		});
+
+		socket.on('resetError', (params) => {
+			let fleetId = params.fleetId;
+			if (!fleetId) return;
+
+			if (!gFleetsData[fleetId]) return;
+			gFleetsData[fleetId].hasError = false;
+			gFleetsData[fleetId].errorsCount = 0;
+			
+			console.log('resetError for ' + fleetId);
+		});
+
 
 	});
 
-	
-
 	log.info('Websocket set');
+
+	const refresh_time = 6 * 1000;
+	setInterval(refreshFleets, refresh_time);
+	log.info('refreshFleets started at ' + refresh_time);
+
+	const refresh_wings_time = 120 * 1000;
+	setInterval(refreshFleetWings, refresh_wings_time);
+	log.info('refreshFleetWings started at ' + refresh_wings_time);
 };
 
-function refreshFleets() {
-	if (!gIsWSgood || gHasWSerror) return;
-
-	log.info('fleet refresh');
-
-	for (let fleetID in gFleetsData) {
-		refreshFleet(fleetID);
+function initNewFleetsData() {
+	return {
+		toLoadSquads: new Set(),
+		errorsCount: 0,
 	}
 }
 
-
-function refreshFleet(fleetID) {
-	if (!gFleetsData[fleetID].accessToken) {
-		if (!gFleetsData[fleetID].fleet || !gFleetsData[fleetID].fleet.fc) {
-			console.log('fleets.get');
-			fleets.get(fleetID, onFleetDB);
-			return;
-		}
-		console.log('getAccessToken');
-		getAccessToken();
+function refreshFleets() {
+	if (io.engine.clientsCount == 0) {
 		return;
 	}
 
-	console.log('prepareReadFleet');
-	prepareReadFleet();
-	return;
+	for (let fleetId in gFleetsData) {
+		if (gFleetsData[fleetId].hasError) continue;
+		refreshFleet(fleetId);
+
+		if (gFleetsData[fleetId].toLoadSquads.size > 0) {
+			load
+		}
+	}
+
+	if (gIDNames_toLoad.size > 0) {
+		loadIDNames();
+	}
+}
+
+function loadIDNames() {
+	let IDsArray = Array.from(gIDNames_toLoad);
+	gIDNames_toLoad.clear();
+
+	console.log('>> loadIDNames ' + IDsArray.length);
+	
+	UniverseApi.postUniverseNames(IDsArray, {}, function (error, ESIdata) {
+		if (error) {
+			console.log('ESI universeNames error', error);
+			return;
+		}
+		ESIdata.forEach(r => {
+			gIDNames[r.id] = r.name;
+		});
+	});
+}
+
+/*
+
+//gSolarSystems_toLoad
+function loadSolarSystems() {
+	let IDsArray = Array.from(gIDNames_toLoad);
+	gIDNames_toLoad.clear();
+
+	onError('>> loadSolarSystems ' + IDsArray.length);
+
+	UniverseApi.getUniverseSystemsSystemId(IDsArray, {}, function (error, ESIdata) {
+		if (error) {
+			onError('ESI universeNames error', error);
+			return;
+		}
+		ESIdata.forEach(r => {
+			gIDNames[r.id] = r.name;
+		});
+	});
+
+	UniverseApi.(systemId, opts, callback);
+
+}
+*/
+
+function checkFleetToken(fleetId, callback, onError) {
+	if (!gFleetsData[fleetId].accessToken) {
+		if (!gFleetsData[fleetId].fleet || !gFleetsData[fleetId].fleet.fc) {
+			console.log('>> fleets.get');
+			fleets.get(fleetId, onFleetDB);
+			return false;
+		}
+		//		console.log('getAccessToken');
+		//getAccessToken();
+		getAccessToken();
+		return false;
+	}
+
+	return true;
+
 
 	function onFleetDB(foundFleet) {
 		if (!foundFleet) {
@@ -112,14 +186,15 @@ function refreshFleet(fleetID) {
 			return;
 		}
 
-		console.log('onFleetDB -> getAccessToken');
+		//		console.log('onFleetDB -> getAccessToken');
 
-		gFleetsData[fleetID].fleet = foundFleet;
+		gFleetsData[fleetId].fleet = foundFleet;
 		getAccessToken();
 	}
 
 	function getAccessToken() {
-		user.getRefreshToken(gFleetsData[fleetID].fleet.fc.characterID, onUserToken);
+		console.log('>> getRefreshToken');
+		user.getRefreshToken(gFleetsData[fleetId].fleet.fc.characterID, onUserToken);
 	}
 
 	function onUserToken(foundAccessToken) {
@@ -128,25 +203,34 @@ function refreshFleet(fleetID) {
 			return;
 		}
 
-		gFleetsData[fleetID].accessToken = foundAccessToken;
+		gFleetsData[fleetId].accessToken = foundAccessToken;
 		// db save
 		// db save
 		// db save
 		// db save
-		prepareReadFleet();
+		callback();
 	}
+}
+
+function refreshFleet(fleetId) {
+	if (!checkFleetToken(fleetId, prepareReadFleet, onError)) return;
+
+//	console.log('prepareReadFleet');
+	prepareReadFleet();
+	return;
+
 
 	function prepareReadFleet() {
-		if (!gFleetsData[fleetID].squads) {
+		if (!gFleetsData[fleetId].squads) {
 			var evesso = ESI2_defaultClient.authentications['evesso'];
-			evesso.accessToken = gFleetsData[fleetID].accessToken;
+			evesso.accessToken = gFleetsData[fleetId].accessToken;
 
-			console.log('prepareReadFleet -> getFleetsFleetIdWings');
-			FleetsApi.getFleetsFleetIdWings(fleetID, {}, onWingsData);
+			console.log('>> prepareReadFleet -> getFleetsFleetIdWings');
+			FleetsApi.getFleetsFleetIdWings(fleetId, {}, onWingsData);
 			return;
 		}
 
-		console.log('prepareReadFleet -> onReadFleet');
+//		console.log('prepareReadFleet -> onReadFleet');
 		onReadFleet();
 	}
 
@@ -158,7 +242,7 @@ function refreshFleet(fleetID) {
 		}
 
 		let squads = {};
-		gFleetsData[fleetID].squads = squads;
+		gFleetsData[fleetId].squads = squads;
 
 		for (let wing of data) {
 			// wing.id, wing.name, wing.squads
@@ -167,15 +251,15 @@ function refreshFleet(fleetID) {
 			}
 		}
 
-		console.log('onWingsData -> onReadFleet');
+//		console.log('onWingsData -> onReadFleet');
 		onReadFleet();
 	}
 
 	function onReadFleet() {
 		var evesso = ESI2_defaultClient.authentications['evesso'];
-		evesso.accessToken = gFleetsData[fleetID].accessToken;
+		evesso.accessToken = gFleetsData[fleetId].accessToken;
 
-		FleetsApi.getFleetsFleetIdMembers(fleetID, {}, onFleetData);
+		FleetsApi.getFleetsFleetIdMembers(fleetId, {}, onFleetData);
 	}
 
 	function onFleetData(error, fleetData) {
@@ -187,16 +271,17 @@ function refreshFleet(fleetID) {
 
 		let charIDs = fleetData.map(row => row.characterId);
 
-		let foundIDs = charIDs.filter(row => !!gUserNamesData[row.characterID]);
+		let foundIDs = charIDs.filter(x => !!gUserNamesData[x]);
 		let missingIDs = diffArray(charIDs, foundIDs);
 
 		if (missingIDs.length) {
+			console.log('>> users.findMultiple');
 			users.findMultiple(missingIDs, function (users) {
 				onDBLoadUsers(users, missingIDs, fleetData);
 			});
 		} else {
-			console.log('onFleetData -> onESILoadUsers');
-			onESILoadUsers(null, null, fleetData);
+//			console.log('onFleetData -> onESILoadUsers');
+			prepareFleetData(fleetData);
 		}
 	};
 
@@ -213,9 +298,9 @@ function refreshFleet(fleetID) {
 
 		if (missingIDs.length > 0) {
 			var evesso = ESI2_defaultClient.authentications['evesso'];
-			evesso.accessToken = gFleetsData[fleetID].accessToken;
+			evesso.accessToken = gFleetsData[fleetId].accessToken;
 
-			console.log('onDBLoadUsers -> postUniverseNames');
+			console.log('>> onDBLoadUsers -> postUniverseNames');
 			UniverseApi.postUniverseNames(missingIDs, {}, function (error, ESIdata) {
 				if (error) {
 					onError('ESI universeNames error');
@@ -224,7 +309,7 @@ function refreshFleet(fleetID) {
 				onESILoadUsers(ESIdata, fleetData);
 			});
 		} else {
-			console.log('onDBLoadUsers -> prepareFleetData');
+//			console.log('onDBLoadUsers -> prepareFleetData');
 			prepareFleetData(fleetData);
 			//onESILoadUsers(null, DBdata, fleetData);
 		}
@@ -236,25 +321,33 @@ function refreshFleet(fleetID) {
 		// db save
 		// db save
 
-		console.log('onESILoadUsers -> prepareFleetData');
+//		console.log('onESILoadUsers -> prepareFleetData');
 		prepareFleetData(fleetData);
 	}
 
 	function prepareFleetData(fleetData) {
 		try {
-			let squads = gFleetsData[fleetID].squads;
+			let gData = gFleetsData[fleetId];
+			let squads = gData.squads;
 
 			let pilots = [];
 			for (let row of fleetData) {
-				let joinTime = row.joinTime;
-				let shipTypeId = row.shipTypeId;
-				let solarSystemId = row.solarSystemId;
 				let squad = squads[row.squadId];
 				let squadName = '?';
 				if (squad) squadName = squad.name;
-				if (row.squadId == -1) squadName = 'Fleet commander';
-				let stationId = row.stationId;
+				if (row.squadId == -1) squadName = row.roleName;//'Fleet commander';
 
+				//let stationId = row.stationId;
+				//let stationName = gIDNames[stationId] || stationId;
+
+				let solarSystemId = row.solarSystemId;
+				let solarName = gIDNames[solarSystemId] || solarSystemId;
+
+				let shipId = row.shipTypeId;
+				let shipName = gIDNames[shipId] || shipId;
+
+				let inFleet_mins = (new Date() - row.joinTime) / 60000;
+				
 				pilots.push({
 					name: gUserNamesData[row.characterId],
 					main: null,
@@ -263,13 +356,24 @@ function refreshFleet(fleetID) {
 					shipsAll: [],
 					timeActive: '',
 					timeWaitlist: '',
-					timeTotal: '' + joinTime,
-					ship: '' + shipTypeId,
-					system: '' + solarSystemId,
+					timeTotal: inFleet_mins,
+					ship: shipName,
+					system: solarName,
 				});
+
+				if (row.squadId != -1 && squads[row.squadId] === undefined) {
+					gData.toLoadSquads.add(row.squadId);
+				}
+				if (solarSystemId > 0 && !gIDNames[solarSystemId]) {
+					gIDNames_toLoad.add(solarSystemId);
+				}
+				if (shipId > 0 && !gIDNames[shipId]) {
+					gIDNames_toLoad.add(shipId);
+				}
+				
 			}
 
-			console.log('prepareFleetData -> emitFleetData');
+//			console.log('prepareFleetData -> emitFleetData');
 			emitFleetData(pilots);
 
 		} catch (e) {
@@ -279,21 +383,75 @@ function refreshFleet(fleetID) {
 
 
 	function emitFleetData(pilots) {
-		if (!gIsWSgood || gHasWSerror) return;
-		if (!gFleetsData[fleetID].socket) return;
-
-		console.log('emit');
-		gFleetsData[fleetID].socket.emit('fleet_data', { pilots });
-		gIsWSgood = false;
+		io.to('fleet' + fleetId).emit('fleet_data', { pilots });
+		//gFleetsData[fleetId].socket.emit('fleet_data', { pilots });
 	}
 
 	function onError(msg) {
-		console.log('error');
-		gHasWSerror = true;
+		gFleetsData[fleetId].errorsCount++;
+
+		if (gFleetsData[fleetId].errorsCount >= 5) {
+			console.log('max error (5) for fleetId=' + fleetId, msg);
+			gFleetsData[fleetId].hasError = true;
+
+			io.to('fleet' + fleetId).emit('fleet_data', { error: msg });
+		}
 	}
 };
 
-setInterval(refreshFleets, 6000);
+
+
+
+
+function refreshFleetWings() {
+	if (io.engine.clientsCount == 0) return;
+	if (fleetWingsError) return;
+
+	for (let fleetId in gFleetsData) {
+		refreshFleetWings_single(fleetId);
+	}
+}
+
+
+function refreshFleetWings_single(fleetId) {
+	if (!checkFleetToken(fleetId, getFleetWings, onError)) return;
+
+	getFleetWings();
+	return;
+
+	function getFleetWings() {
+		var evesso = ESI2_defaultClient.authentications['evesso'];
+		evesso.accessToken = gFleetsData[fleetId].accessToken;
+
+		console.log('>> refreshFleetWings -> getFleetsFleetIdWings');
+		FleetsApi.getFleetsFleetIdWings(fleetId, {}, onWingsData);
+	};
+
+	function onWingsData(error, data) {
+		if (error) {
+			log.error('getFleetsFleetIdWings', error);
+			onError('ESI fleet wings error');
+			return;
+		}
+
+		let squads = {};
+		gFleetsData[fleetId].squads = squads;
+
+		for (let wing of data) {
+			// wing.id, wing.name, wing.squads
+			for (let squad of wing.squads) {
+				squads[squad.id] = { name: squad.name, wing: wing.name, wing_id: wing.id };
+			}
+		}
+	}
+
+
+	function onError(error) {
+		log.error('refreshFleetWings', error);
+		fleetWingsError = true;
+	};
+}
+
 
 
 /*
