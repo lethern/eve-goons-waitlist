@@ -136,9 +136,6 @@ function onServerError(error) {
 $(document).ready(() => {
 	main = document.getElementById('main');
 
-	//
-	//socket.auth = { username: "Bob" };
-
 	socket.on('fleet_data', (args) => {
 		if (args.error) {
 			onServerError(args.error);
