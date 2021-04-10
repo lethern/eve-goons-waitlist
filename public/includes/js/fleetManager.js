@@ -305,9 +305,9 @@ function onFleetData(args) {
 
 	//let model = generateTestModel();
 	try {
-		for (let entry in model) {
-			renderRow(model[entry]);
-		}
+		//pilotData
+		updateFleetModel(model);
+		
 	} catch (e) {
 		console.log(e);
 		onSmallServerError('Client error');
@@ -315,6 +315,33 @@ function onFleetData(args) {
 
 	if (Object.keys(gSquadsData).length === 0) {
 		socket.emit('getSquadsList', { fleetId: SERV_fleetId });
+	}
+}
+function updateFleetModel(model) {
+	for (let name in gPilotsData) {
+		let obj = gPilotsData[name];
+		obj.inactive = true;
+	}
+
+	for (let entry in model) {
+		renderRow(model[entry]);
+	}
+
+	for (let name in gPilotsData) {
+		let obj = gPilotsData[name];
+		if (obj.inactive) {
+			updateRow_inactive(obj);
+
+			if (!obj.inactive_time) {
+				obj.inactive_time = new Date();
+			} else {
+				let diff = (new Date()) - obj.inactive_time;
+				if (diff > 3 * 60 * 1000) {
+					removeRow_inactive(obj);
+					delete gPilotsData[name];
+				}
+			}
+		}
 	}
 }
 
@@ -391,6 +418,8 @@ function renderRow(pilotModel) {
 		obj.model = pilotModel;
 		addRow(obj);
 	}
+
+	obj.inactive = false;
 }
 
 let colsStruct = [
@@ -629,6 +658,22 @@ function addRow(pilotData) {
 	updateRow(pilotData);
 };
 
+function removeRow_inactive(pilotData) {
+	globalData.fleetBody.removeChild(pilotData.rowDOM);
+}
+
+function updateRow_inactive(pilotData) {
+	let cells = pilotData.cellsDOM;
+
+	cells['squad_up'].classList.remove('orangeSquad');
+	cells['squad_up'].classList.remove('greenSquad');
+	cells['squad_up'].classList.add('redSquad');
+
+	cells['squad_up'].textContent = 'missing';
+
+	cells['squad_down'].textContent = '';
+	cells['squad_down'].targetSquad = null;
+}
 
 function updateRow(pilotData) {
 	let cells = pilotData.cellsDOM;
@@ -655,6 +700,7 @@ function updateRow(pilotData) {
 				} else {
 					if (globalData.currentSquad && globalData.currentSquad == model.squad) {
 						cells['squad_up'].classList.remove('orangeSquad');
+						cells['squad_up'].classList.remove('redSquad');
 						cells['squad_up'].classList.add('greenSquad');
 
 						cells['squad_down'].textContent = globalData.waitlistSquad + ' <-';
@@ -662,6 +708,7 @@ function updateRow(pilotData) {
 						cells['squad_down'].classList.add('blueSquad', 'textButton');
 					} else {
 						cells['squad_up'].classList.remove('greenSquad');
+						cells['squad_up'].classList.remove('redSquad');
 						cells['squad_up'].classList.add('orangeSquad');
 
 						cells['squad_down'].textContent = '-> ' + globalData.currentSquad;
