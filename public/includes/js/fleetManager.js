@@ -252,13 +252,13 @@ function onSquadsList(args) {
 
 	if (args.currentSquadId) {
 		let currentSquadId = args.currentSquadId;
-		globalData.currentSquad = (squads[currentSquadId] || {}).name;
+		globalData.currentSquad = (gSquadsData[currentSquadId] || {}).name;
 		updateCurrentSquad();
 	}
 
 	if (args.waitlistSquadId) {
 		let waitlistSquadId = args.waitlistSquadId;
-		globalData.waitlistSquad = (squads[waitlistSquadId] || {}).name;
+		globalData.waitlistSquad = (gSquadsData[waitlistSquadId] || {}).name;
 		updateWaitlistSquad();
 	}
 }
