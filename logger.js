@@ -115,24 +115,20 @@ function logError(msg, metadata) {
 		copy = JSON.parse(JSON.stringify(metadata));
 	} catch (e) { }
 
-	if (!copy) {
+	if (!copy || !copy.response) {
 		logger.error(msg, metadata)
 		return;
 	}
 
 
-	logger.error('...', Object.keys(copy));
-
-	if (copy.response && copy.response.req) {
-		logger.error(',,,', Object.keys(copy.response.req));
-
+	if (copy.response.req) {
 		copy.response.req.headers = undefined;
-		if (copy.response.req.header) {
-			copy.response.req.header = {
-				"x-esi-error-limit-remain": copy.response.req.header["x-esi-error-limit-remain"],
-				"x-esi-error-limit-reset": copy.response.req.header["x-esi-error-limit-reset"]
-			};
-		}
+	}
+	if (copy.response.header) {
+		copy.response.header = {
+			"error-limit-remain": copy.response.header["x-esi-error-limit-remain"],
+			"error-limit-reset": copy.response.header["x-esi-error-limit-reset"]
+		};
 	}
 	logger.error(msg, copy)
 }
