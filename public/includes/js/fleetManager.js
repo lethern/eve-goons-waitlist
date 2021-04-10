@@ -125,7 +125,7 @@ let gSmallErrorDiv;
 let gServerStatusDiv;
 let gServerStatusTime;
 let gSquadsData = {};
-
+let gActive = false;
 
 function onSmallServerError(error) {
 
@@ -162,6 +162,8 @@ $(document).ready(() => {
 	setupFleetConfig();
 	setupFleetTable();
 
+	gActive = true;
+
 	{
 		/*
 		let model = JSON.parse(SERV_pilots);
@@ -182,7 +184,7 @@ $(document).ready(() => {
 })
 
 function setupFleetConfig() {
-	let configDiv = createDiv(gMain, '');
+	let configDiv = createDiv(gMain);
 
 	let squadOptions = [];
 	for (let it in gSquadsData) {
@@ -190,7 +192,7 @@ function setupFleetConfig() {
 		squadOptions.push(squad);
 	}
 
-	let line1 = configDiv(gMain);
+	let line1 = createDiv(configDiv);
 	createLabel(line1, 'Active squad: ');
 	let dropmenu = createDropDownMenu(line1, '...', showBtnMenu, squadOptions);
 
@@ -212,6 +214,8 @@ function onSquadsList(args) {
 		return;
 	}
 
+	if (!gActive) return;
+
 	let squads = args.squads;
 	gSquadsData = squads;
 	let currentSquadId = args.currentSquadId;
@@ -226,6 +230,8 @@ function onFleetData(args) {
 		onServerError(args.error);
 		return;
 	}
+
+	if (!gActive) return;
 
 	// dont change the "Connected" string
 	updateServerStatus('Connected', 'greenLabel');
