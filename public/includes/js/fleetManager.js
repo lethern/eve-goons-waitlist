@@ -659,14 +659,14 @@ function updateRow(pilotData) {
 
 						cells['squad_down'].textContent = globalData.waitlistSquad + ' <-';
 						cells['squad_down'].targetSquad = globalData.waitlistSquad;
-						cells['squad_down'].classList.add('blueSquad');
+						cells['squad_down'].classList.add('blueSquad', 'textButton ');
 					} else {
 						cells['squad_up'].classList.remove('greenSquad');
 						cells['squad_up'].classList.add('orangeSquad');
 
 						cells['squad_down'].textContent = '-> ' + globalData.currentSquad;
 						cells['squad_down'].targetSquad = globalData.currentSquad;
-						cells['squad_down'].classList.add('blueSquad');
+						cells['squad_down'].classList.add('blueSquad', 'textButton ');
 					}
 				}
 			break;

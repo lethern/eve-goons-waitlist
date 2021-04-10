@@ -101,13 +101,15 @@ module.exports = function (http, port) {
 			if (params.currentSquadId) {
 				gFleetsData[fleetId].currentSquadId = params.currentSquadId;
 
-				socket.emit('squads_list', { currentSquadId: params.currentSquadId });
+				//socket.emit('squads_list', { currentSquadId: params.currentSquadId });
+				io.to('fleet' + fleetId).emit('squads_list', { currentSquadId: params.currentSquadId });
 			}
 
 			if (params.waitlistSquadId) {
 				gFleetsData[fleetId].waitlistSquadId = params.waitlistSquadId;
 
-				socket.emit('squads_list', { waitlistSquadId: params.waitlistSquadId });
+				//socket.emit('squads_list', { waitlistSquadId: params.waitlistSquadId });
+				io.to('fleet' + fleetId).emit('squads_list', { waitlistSquadId: params.waitlistSquadId });
 			}
 		});
 
