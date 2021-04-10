@@ -389,7 +389,8 @@ function refreshFleet(fleetId) {
 			emitFleetData(pilots);
 
 		} catch (e) {
-			onError(e);
+			log.error('prepareFleetData exception', e);
+			onError('prepareFleetData exception');
 		}
 	}
 
@@ -455,8 +456,8 @@ function refreshFleetWings(fleetId, callback) {
 
 
 	function onError(error) {
-		log.error('refreshFleetWings', error);
-		if (callback) callback({ error: error.message });
+		log.error('refreshFleetWings: ', error);
+		if (callback) callback({ error: (error.message ? error.message : error) });
 	};
 }
 

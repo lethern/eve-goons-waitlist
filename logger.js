@@ -116,7 +116,7 @@ function logError(msg, metadata) {
 	} catch (e) { }
 
 	if (!copy || !copy.response) {
-		logger.error(msg, metadata)
+		logger.error(msg, objectify(metadata))
 		return;
 	}
 
@@ -130,15 +130,22 @@ function logError(msg, metadata) {
 			"error-limit-reset": copy.response.header["x-esi-error-limit-reset"]
 		};
 	}
-	logger.error(msg, copy)
+	logger.error(msg, objectify(copy))
+}
+
+function objectify(arg) {
+	if (typeof arg == 'string')
+		return { msg: arg };
+	else
+		return arg;
 }
 
 module.exports = (module) => {
 	const filename = getLabel(module.filename);
 	return {
-		info: (msg, metadata) => logger.info(`[${filename}]: ${msg}`,metadata),
-		debug: (msg, metadata) => logger.debug(`[${filename}]: ${msg}`, metadata),
-		warn: (msg, metadata) => logger.warn(`[${filename}]: ${msg}`, metadata),
+		info: (msg, metadata) => logger.info(`[${filename}]: ${msg}`, objectify(metadata)),
+		debug: (msg, metadata) => logger.debug(`[${filename}]: ${msg}`, objectify(metadata)),
+		warn: (msg, metadata) => logger.warn(`[${filename}]: ${msg}`, objectify(metadata)),
 		error: (msg, metadata) => logError(`[${filename}]: ${msg}`, metadata),
 	}
 };

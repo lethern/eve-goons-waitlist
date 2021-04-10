@@ -15,7 +15,7 @@ module.exports = function (setup) {
     */
     module.get = function(fleetID, cb){
 		db.findOne({ 'id': fleetID }, function (err, doc) {
-			if (err) log.error("fleets.get: Error for db.findOne", { err, id });
+			if (err) log.error("fleets.get: Error for db.findOne", { err, fleetID });
 			if (!!!doc) {
 				cb(null, false)
 			} else {
