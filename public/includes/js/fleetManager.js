@@ -198,7 +198,7 @@ function setupFleetConfig() {
 	let line1 = createDiv(configDiv);
 	createLabel(line1, 'Active squad: ');
 	let activeSquad = globalData.currentSquad || 'select';
-	gCurrentSquadDropmenu = createDropDownMenu(line1, activeSquad, showBtnMenu, squadOptions, { btnCss: 'squadBtns' });
+	gCurrentSquadDropmenu = createDropDownMenu(line1, activeSquad, selectActiveSquad, squadOptions, { btnCss: 'squadBtns' });
 
 	//globalData.currentSquad = (squads[currentSquadId] || {}).name;
 	//globalData.waitlistSquad
@@ -430,6 +430,19 @@ function showBtnMenu(event) {
 	//$(btnDiv.dropmenuDOM).dropdown();
 }
 
+
+function addDropDownButton(parent, text, callback, cssClss) {
+	let cell = document.createElement('a');
+	cell.classList.add('dropdown-item');
+	if (cssClss) cell.classList.add(cssClss);
+
+	parent.appendChild(cell);
+	cell.textContent = text;
+	if (callback) cell.addEventListener('click', callback);
+	return cell;
+}
+
+
 function createDropDownMenu(parent, text, onClick, options, config) {
 	if (!config) config = {};
 	let dropmenu = createDiv(parent, '', 'dropdown');
@@ -442,7 +455,7 @@ function createDropDownMenu(parent, text, onClick, options, config) {
 	dropmenu._menu = menu;
 
 	for (let op of options) {
-		addButton(menu, op);
+		addDropDownButton(menu, op);
 	}
 
 	$(btn).dropdown();

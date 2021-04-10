@@ -116,12 +116,13 @@ function refreshFleets() {
 	for (let fleetId in gFleetsData) {
 		let fleet = gFleetsData[fleetId];
 		if (fleet.hasError) continue;
-		refreshFleet(fleetId);
 
 		if (fleet.accessToken && fleet.fleet && !fleet.fleet.fc && fleet.toLoadSquads) {
 			fleet.toLoadSquads = false;
 			refreshFleetWings(fleetId);
 		}
+
+		refreshFleet(fleetId);
 	}
 
 	if (gIDNames_toLoad.size > 0) {
