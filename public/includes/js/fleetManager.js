@@ -145,7 +145,7 @@ $(document).ready(() => {
 		}
 
 		// dont change the "Connected" string
-		updateServerStatus('Connected (0)', 'greenLabel');
+		updateServerStatus('Connected', 'greenLabel');
 		serverStatusTime = new Date();
 
 		let model = args.pilots;
@@ -209,7 +209,7 @@ function checkConnectionLoop() {
 }
 
 function createDiv(parent, text, css) {
-	let div = document.createElement('span');
+	let div = document.createElement('div');
 	if (css) div.classList.add(css);
 	div.textContent = text;
 	parent.appendChild(div);
