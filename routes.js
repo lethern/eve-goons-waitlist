@@ -44,7 +44,7 @@ router.post('/commander', commander_controller.registerFleet);
 router.delete('/commander/:fleetID', disabled);//fleetsController.delete);
 
 //Commander - FC Waitlist Management
-router.get('/commander/:fleetID/', fleetsController.index);
+router.get('/commander/:fleetID/', disabled);//fleetsController.index);
 router.post('/commander/:fleetid/update/info', disabled);//fleetsController.getInfo);	
 router.post('/commander/admin/alarm/:characterID/:fleetID', disabled);//waitlistController.alarm);//501
 router.post('/commander/admin/invite/:characterID/:fleetID', disabled);//fleetsController.invite);
