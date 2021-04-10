@@ -85,11 +85,11 @@
 }
 
 .rowMain:nth-child(odd) {
-	background-color: #575757;
+	background-color: #515151;
 }
 
 .rowMain:nth-child(even) {
-	background-color: #646464;
+	background-color: #5f5f5f;
 }
 
 .rowAlt:nth-child(even) {

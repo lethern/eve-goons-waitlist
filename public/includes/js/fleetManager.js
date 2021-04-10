@@ -238,8 +238,6 @@ function refreshSquads() {
 }
 
 function onSquadsList(args) {
-	console.log('onSquadsList', args);
-
 	if (args.error) {
 		onSmallServerError('Squads List: '+args.error);
 		return;
@@ -389,7 +387,7 @@ function setupHeader() {
 	updateServerStatus('Connecting...');
 
 	// setupErrorDiv
-	gErrorDiv = createDiv(gMainHead, '', 'gErrorDiv');
+	gErrorDiv = createDiv(gMainHead, '', 'errorDiv');
 	gErrorDiv.style.display = 'none';
 
 	gSmallErrorDiv = createDiv(gMainHead, '');
