@@ -91,6 +91,23 @@ module.exports = function (http, port) {
 			console.log('resetError for ' + fleetId);
 		});
 
+		socket.on('setFleetConfig', (params) => {
+			let fleetId = params.fleetId;
+			if (!fleetId) return;
+
+			let fleet = gFleetsData[fleetId];
+			if (!fleet) return;
+
+			if (params.currentSquadId) {
+				gFleetsData[fleetId].currentSquadId = params.currentSquadId;
+				log.info('setting currentSquadId to ' + params.currentSquadId);
+			}
+
+			if (params.waitlistSquadId) {
+				gFleetsData[fleetId].waitlistSquadId = params.waitlistSquadId;
+				log.info('setting waitlistSquadId to ' + params.waitlistSquadId);
+			}
+		});
 
 	});
 

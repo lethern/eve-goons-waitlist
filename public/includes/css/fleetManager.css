@@ -175,3 +175,7 @@
 .mySpan{
 	display: inline-block !important;
 }
+
+.dropdown-item{
+	cursor: pointer;
+}

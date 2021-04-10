@@ -128,6 +128,7 @@ let gSquadsData = {};
 let gActive = false;
 
 let gCurrentSquadDropmenu;
+let gWaitlistSquadDropmenu;
 
 function onSmallServerError(error) {
 
@@ -199,15 +200,39 @@ function setupFleetConfig() {
 	let activeSquad = globalData.currentSquad || 'select';
 	gCurrentSquadDropmenu = createDropDownMenu(line1, activeSquad, selectActiveSquad, squadOptions, { btnCss: 'squadBtns' });
 
+	//
+	let line2 = createDiv(configDiv);
+	createLabel(line2, 'Waitlist squad: ');
+	let waitlistSquad = globalData.waitlistSquad || 'select';
+	gWaitlistSquadDropmenu = createDropDownMenu(line2, waitlistSquad, selectWaitlistSquad, squadOptions, { btnCss: 'squadBtns' });
+
+
 	//globalData.currentSquad = (squads[currentSquadId] || {}).name;
 	//globalData.waitlistSquad
 
 	let btn = addButton(line1, 'refresh', refreshSquads, 'refreshSquads');
 }
 
+function findSquadName(id) {
+	for (let it in gSquadsData) {
+		let squad = gSquadsData[it].name;
+		if (squad == chosen) return it;
+	}
+	return null;
+}
+
 function selectActiveSquad(event) {
 	let chosen = event.target.textContent;
 	alert(chosen);
+
+	socket.emit('setFleetConfig', { fleetId: SERV_fleetId, currentSquadId: findSquadName(chosen) });
+}
+
+function selectWaitlistSquad(event) {
+	let chosen = event.target.textContent;
+	alert(chosen);
+
+	socket.emit('setFleetConfig', { fleetId: SERV_fleetId, waitlistSquadId: findSquadName(chosen) });
 }
 
 function refreshSquads() {
@@ -224,19 +249,35 @@ function onSquadsList(args) {
 
 	if (!gActive) return;
 
-	let squads = args.squads;
-	if (!squads) return;
+	
+	if (args.squads) {
+		gSquadsData = args.squads;
+		updateCurrentSquadDropmenu();
+	}
 
-	gSquadsData = squads;
-	updateCurrentSquadDropmenu();
+	if (args.currentSquadId) {
+		let currentSquadId = args.currentSquadId;
+		globalData.currentSquad = (squads[currentSquadId] || {}).name;
+		updateCurrentSquad();
+	}
 
-	let currentSquadId = args.currentSquadId;
-	let waitlistSquadId = args.waitlistSquadId;
-
-	globalData.currentSquad = (squads[currentSquadId] || {}).name;
-	globalData.waitlistSquad = (squads[waitlistSquadId] || {}).name;
-
+	if (args.waitlistSquadId) {
+		let waitlistSquadId = args.waitlistSquadId;
+		globalData.waitlistSquad = (squads[waitlistSquadId] || {}).name;
+		updateWaitlistSquad();
+	}
 }
+
+function updateCurrentSquad() {
+	let activeSquad = globalData.currentSquad || 'select';
+	gCurrentSquadDropmenu._btn.textContent = activeSquad;
+}
+
+function updateWaitlistSquad() {
+	let waitlistSquad = globalData.waitlistSquad || 'select';
+	gWaitlistSquadDropmenu._btn.textContent = waitlistSquad;
+}
+
 
 function updateCurrentSquadDropmenu() {
 	let squadOptions = [];
@@ -245,6 +286,7 @@ function updateCurrentSquadDropmenu() {
 		squadOptions.push(squad);
 	}
 	updateDropDownMenu(gCurrentSquadDropmenu, squadOptions, selectActiveSquad);
+	updateDropDownMenu(gWaitlistSquadDropmenu, squadOptions, selectActiveSquad);
 }
 
 function onFleetData(args) {
@@ -273,7 +315,7 @@ function onFleetData(args) {
 		onSmallServerError('Client error');
 	}
 
-	if (!gSquadsData) {
+	if (Object.keys(gSquadsData).length === 0) {
 		socket.emit('getSquadsList', { fleetId: SERV_fleetId });
 	}
 }
@@ -451,6 +493,7 @@ function createDropDownMenu(parent, text, onClick, options, config) {
 	let dropmenu = createDiv(parent, '', 'dropdown');
 
 	let btn = addButton(dropmenu, text, null, config.btnCss);
+	dropmenu._btn = btn;
 	btn.classList.add('dropdown-toggle');
 	btn.setAttribute('data-toggle', "dropdown");
 
@@ -467,12 +510,12 @@ function createDropDownMenu(parent, text, onClick, options, config) {
 }
 
 
-function updateDropDownMenu(dropmenu, options) {
+function updateDropDownMenu(dropmenu, options, onClick) {
 	let menu = dropmenu._menu;
 	menu.innerHTML = '';
 
 	for (let op of options) {
-		addDropDownButton(menu, op);
+		addDropDownButton(menu, op, onClick);
 	}
 }
 
