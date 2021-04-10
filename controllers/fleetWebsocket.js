@@ -295,6 +295,15 @@ function refreshFleet(fleetId) {
 		if (error) {
 			log.error('getFleetMembers', error);
 			onError('ESI fleet error');
+
+			if (error.status == 403 && error.response && error.response.text) {
+				if (error.response.text.includes('sso_status\\":401')) {
+					log.info('resseting token');
+					gFleetsData[fleetId].accessToken = null;
+				} else {
+					log.info('? ' + error.response.text);
+				}
+			}
 			return;
 		}
 

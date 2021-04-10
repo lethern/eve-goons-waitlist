@@ -213,10 +213,10 @@ function setupFleetConfig() {
 	let btn = addButton(line1, 'refresh', refreshSquads, 'refreshSquads');
 }
 
-function findSquadName(id) {
+function findSquadIdOfName(argName) {
 	for (let it in gSquadsData) {
 		let squad = gSquadsData[it].name;
-		if (squad == chosen) return it;
+		if (squad == argName) return it;
 	}
 	return null;
 }
@@ -225,14 +225,14 @@ function selectActiveSquad(event) {
 	let chosen = event.target.textContent;
 	alert(chosen);
 
-	socket.emit('setFleetConfig', { fleetId: SERV_fleetId, currentSquadId: findSquadName(chosen) });
+	socket.emit('setFleetConfig', { fleetId: SERV_fleetId, currentSquadId: findSquadIdOfName(chosen) });
 }
 
 function selectWaitlistSquad(event) {
 	let chosen = event.target.textContent;
 	alert(chosen);
 
-	socket.emit('setFleetConfig', { fleetId: SERV_fleetId, waitlistSquadId: findSquadName(chosen) });
+	socket.emit('setFleetConfig', { fleetId: SERV_fleetId, waitlistSquadId: findSquadIdOfName(chosen) });
 }
 
 function refreshSquads() {
