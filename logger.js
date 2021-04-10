@@ -112,7 +112,7 @@ function logError(msg, metadata) {
 
 	let copy;
 	try {
-		copy = JSON.parse(JSON.stringify(object));
+		copy = JSON.parse(JSON.stringify(metadata));
 	} catch (e) { }
 
 	if (!copy) {
