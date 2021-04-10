@@ -337,7 +337,7 @@ function refreshFleet(fleetId) {
 			onError('ESI fleet error');
 
 			if (error.status == 403 && error.response && error.response.text) {
-				if (error.response.text.includes('sso_status\\":401')) {
+				if ((error.response.text.includes && error.response.text.includes('sso_status')) || error.response.text["sso_status"] == 401) {
 					log.info('resseting token');
 					gFleetsData[fleetId].accessToken = null;
 				} else {
