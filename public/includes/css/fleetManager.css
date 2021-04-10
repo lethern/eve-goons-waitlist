@@ -52,7 +52,7 @@
 }
 
 .refreshSquads{
-	margin-left: 10px;
+	margin-left: 15px;
 	color: #b68888;
 	display: inline-block !important;
 }
@@ -145,10 +145,11 @@
 }
 
 .squadBtns {
-	border-width: 1px;
+	border: 1px solid;
 	border-radius: 3px;
 	border-color: #75787d;
 	background-color: #212224;
+	padding: 0px 6px;
 }
 
 /* override */

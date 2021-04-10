@@ -109,7 +109,6 @@ socket.on("connect", () => {
 	console.log('socket: on connect');
 
 	socket.emit('listenForFleet', { fleetId: SERV_fleetId });
-	socket.emit('getSquadsList', { fleetId: SERV_fleetId });
 });
 
 let globalData = {
@@ -245,7 +244,7 @@ function updateCurrentSquadDropmenu() {
 		let squad = gSquadsData[it].name;
 		squadOptions.push(squad);
 	}
-	updateDropDownMenu(gCurrentSquadDropmenu, squadOptions);
+	updateDropDownMenu(gCurrentSquadDropmenu, squadOptions, selectActiveSquad);
 }
 
 function onFleetData(args) {
@@ -272,6 +271,10 @@ function onFleetData(args) {
 	} catch (e) {
 		console.log(e);
 		onSmallServerError('Client error');
+	}
+
+	if (!gSquadsData) {
+		socket.emit('getSquadsList', { fleetId: SERV_fleetId });
 	}
 }
 
@@ -304,7 +307,7 @@ function createDiv(parent, text, css) {
 
 function createLabel(parent, text) {
 	let label = createDiv(parent, text, 'mySpan');
-	label.style["margin-right"] = "4px";
+	label.style["margin-right"] = "6px";
 	return label;
 }
 
@@ -455,7 +458,7 @@ function createDropDownMenu(parent, text, onClick, options, config) {
 	dropmenu._menu = menu;
 
 	for (let op of options) {
-		addDropDownButton(menu, op);
+		addDropDownButton(menu, op, onClick);
 	}
 
 	$(btn).dropdown();
@@ -469,7 +472,7 @@ function updateDropDownMenu(dropmenu, options) {
 	menu.innerHTML = '';
 
 	for (let op of options) {
-		addButton(menu, op);
+		addDropDownButton(menu, op);
 	}
 }
 
