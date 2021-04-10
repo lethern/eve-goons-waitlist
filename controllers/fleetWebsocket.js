@@ -5,7 +5,6 @@ const fleets = require('../models/fleets.js')(setup);
 const log = require('../logger.js')(module);
 const raw_io = require('socket.io');
 const ESI2 = require('eve_swagger_interface');
-const logger = require('../logger.js');
 
 const ESI2_defaultClient = ESI2.ApiClient.instance;
 const FleetsApi = new ESI2.FleetsApi();
@@ -136,7 +135,7 @@ module.exports = function (http, port) {
 
 			function moveCallback(error) {
 				if (error) {
-					logger.error('ESI moveMember error', error);
+					log.error('ESI moveMember error', error);
 					return;
 				}
 			}
@@ -195,7 +194,7 @@ function loadIDNames() {
 	
 	UniverseApi.postUniverseNames(IDsArray, {}, function (error, ESIdata) {
 		if (error) {
-			logger.error('ESI universeNames error', error);
+			log.error('ESI universeNames error', error);
 			return;
 		}
 		ESIdata.forEach(r => {
@@ -473,7 +472,7 @@ function refreshFleet(fleetId) {
 		gFleetsData[fleetId].errorsCount++;
 
 		if (gFleetsData[fleetId].errorsCount >= 5) {
-			logger.error('max error (5) for fleetId=' + fleetId, msg);
+			log.error('max error (5) for fleetId=' + fleetId, msg);
 			gFleetsData[fleetId].hasError = true;
 			gFleetsData[fleetId].errorMsg = msg;
 
