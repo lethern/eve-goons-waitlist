@@ -219,7 +219,7 @@ function createDiv(parent, text, css) {
 function setupHeader() {
 	mainHead = createDiv(main, '');
 
-	let statusDiv = createDiv(head, '', 'smallFont');
+	let statusDiv = createDiv(mainHead, '', 'smallFont');
 
 	let srv = createDiv(statusDiv, 'Server: ', 'mySpan');
 	srv.style["margin-right"] = "4px";
@@ -229,6 +229,7 @@ function setupHeader() {
 };
 
 function updateServerStatus(text, css) {
+	if (!serverStatusDiv) return;
 	serverStatusDiv.textContent = text;
 	serverStatusDiv.classList.remove(...serverStatusDiv.classList);
 
