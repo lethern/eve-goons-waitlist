@@ -121,7 +121,11 @@ function logError(msg, metadata) {
 	}
 
 
+	logger.error('...', Object.keys(copy));
+
 	if (copy.response && copy.response.req) {
+		logger.error(',,,', Object.keys(copy.response.req));
+
 		copy.response.req.headers = undefined;
 		if (copy.response.req.header) {
 			copy.response.req.header = {
