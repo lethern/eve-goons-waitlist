@@ -124,9 +124,9 @@ module.exports = function (http, port) {
 			if (!squadId || !pilotId) return;
 
 			var movement = new ESI2.PutFleetsFleetIdMembersMemberIdMovement();
-			movement.squadId = squadId;
+			movement.squad_id = squadId;
 			movement.role = "squad_member";
-			movement.wingId = getWingIdFromSquad(fleetId, squadId);
+			movement.wing_id = getWingIdFromSquad(fleetId, squadId);
 
 			var evesso = ESI2_defaultClient.authentications['evesso'];
 			evesso.accessToken = gFleetsData[fleetId].accessToken;
