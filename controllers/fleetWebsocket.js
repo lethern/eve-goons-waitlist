@@ -124,7 +124,7 @@ module.exports = function (http, port) {
 
 			if (!squadId || !pilotId) return;
 
-			var movement = new EveSwaggerInterface.PutFleetsFleetIdMembersMemberIdMovement();
+			var movement = new ESI2.PutFleetsFleetIdMembersMemberIdMovement();
 			movement.squadId = squadId;
 			movement.role = "squad_member";
 			movement.wingId = getWingIdFromSquad(fleetId, squadId);
