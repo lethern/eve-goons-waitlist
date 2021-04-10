@@ -115,19 +115,19 @@ socket.on("connect", () => {
 // by pilot name
 let globalPilotsData = {};
 let main;
+let mainHead;
 let errorDiv;
 let serverStatusDiv;
 let serverStatusTime;
 
 
 function onServerError(error) {
-	let msg = document.createElement('div');
-	msg.textContent = 'Error occured! ' + error;
 	errorDiv.innerHTML = '';
-	errorDiv.appendChild(msg);
 	errorDiv.style.display = 'block';
 
+	let msg = createDiv(errorDiv, 'Error occured! ' + error);
 	let btn = addButton(errorDiv, 'Retry', callback, 'errorBtn');
+
 	function callback() {
 		socket.emit('resetError', { fleetId: SERV_fleetId });
 		errorDiv.innerHTML = '';
@@ -145,7 +145,7 @@ $(document).ready(() => {
 		}
 
 		// dont change the "Connected" string
-		updateServerStatus('Connected', 'greenLabel');
+		updateServerStatus('Connected (0)', 'greenLabel');
 		serverStatusTime = new Date();
 
 		let model = args.pilots;
@@ -191,15 +191,20 @@ $(document).ready(() => {
 
 function checkConnectionLoop() {
 	if (!serverStatusTime) return;
-	if (!serverStatusDiv || !serverStatusDiv.textContent.startsWith('Connected')) return;
+	if (!serverStatusDiv) return;
+	if (!serverStatusDiv.textContent.startsWith('Connected') && !serverStatusDiv.textContent.startsWith('?')) return;
 	let diff = (new Date()) - serverStatusTime;
 
 	diff = Math.round(diff / 1000);
-	serverStatusDiv.textContent = 'Connected (' + diff + ')';
+	
 	if (diff > 30) {
+		serverStatusDiv.textContent = '? (' + diff + ')';
 		serverStatusDiv.classList.add('redLabel');
-	}else if (diff > 6) {
+	} else if (diff > 6) {
+		serverStatusDiv.textContent = 'Connected (' + diff + ')';
 		serverStatusDiv.classList.add('yellowLabel');
+	} else {
+		serverStatusDiv.textContent = 'Connected';
 	}
 }
 
@@ -211,13 +216,12 @@ function createDiv(parent, text, css) {
 	return div;
 }
 
-
 function setupHeader() {
-	let head = createDiv(main, '');
+	mainHead = createDiv(main, '');
 
 	let statusDiv = createDiv(head, '', 'smallFont');
 
-	let srv = createDiv(statusDiv, 'Server: ', 'serverSpan');
+	let srv = createDiv(statusDiv, 'Server: ', 'mySpan');
 	srv.style["margin-right"] = "4px";
 
 	serverStatusDiv = createDiv(statusDiv, '', 'mySpan');
@@ -236,8 +240,7 @@ function updateServerStatus(text, css) {
 };
 
 function setupErrorDiv() {
-	errorDiv = document.createElement('div');
-	errorDiv.classList.add('errorDiv');
+	errorDiv = createDiv(mainHead, '', 'errorDiv');
 	errorDiv.style.display = 'none';
 	main.appendChild(errorDiv);
 }
@@ -257,39 +260,24 @@ function renderRow(pilotModel) {
 
 
 function setupFleetTable() {
-	let fleetTable = document.createElement('div');
-	fleetTable.classList.add('fleetTable');
-	main.appendChild(fleetTable);
+	let fleetTable = createDiv(main, '', 'fleetTable');
 	globalData.fleetTable = fleetTable;
 
-	let colgroup = document.createElement('div');
-	colgroup.classList.add('fleetColGroup');
+	let colgroup = createDiv(fleetTable, '', 'fleetColGroup');
 
-	let ths = document.createElement('div');
-	ths.classList.add('fleetHeadGroup');
+	let ths = createDiv(fleetTable, '', 'fleetHeadGroup');
 
 
 	let columns = ['Pilot', 'Squad', '', 'Ship', 'System', 'Will fly', 'Can fly', 'Time active', 'Time waitlist', 'Time total'];
 	let widths = [200, 150, 50, 100, 80, 100, 100, 60, 60, 60];
 	for (let i in columns) {
-		let column = document.createElement('div');
-		column.classList.add('fleetColumn');
+		let column = createDiv(colgroup, '', 'fleetColumn');
 		column.style.width = widths[i] + 'px';
-		colgroup.appendChild(column);
 
-		let th = document.createElement('div');
-		th.classList.add('fleetHeader');
-		th.textContent = columns[i];
-		ths.appendChild(th);
+		let th = createDiv(ths, columns[i], 'fleetHeader');
 	}
 
-	fleetTable.appendChild(colgroup);
-	fleetTable.appendChild(ths);
-
-
-	let body = document.createElement('div');
-	body.classList.add('fleetBody');
-	fleetTable.appendChild(body);
+	let body = createDiv(fleetTable, '', 'fleetBody');
 	globalData.fleetBody = body;
 };
 
@@ -338,9 +326,7 @@ function showBtnMenu(event) {
 
 function setupPilotBtns(pilotData) {
 	let btnsDiv = pilotData.cellsDOM['squadBtn'];
-	let dropmenu = document.createElement('div');
-	dropmenu.classList.add('dropdown');
-	btnsDiv.appendChild(dropmenu);
+	let dropmenu = createDiv(btnsDiv, '', 'dropdown');
 
 
 	let btn = addButton(dropmenu, '...', showBtnMenu, 'pilotBtns');
@@ -349,10 +335,8 @@ function setupPilotBtns(pilotData) {
 	btn.dropmenuDOM = dropmenu;
 	btn.setAttribute('data-toggle', "dropdown");
 
-	let menu = document.createElement('div');
-	menu.classList.add('dropdown-menu');
+	let menu = createDiv(dropmenu, '', 'dropdown-menu');
 	//menu.style.display = 'none';
-	dropmenu.appendChild(menu);
 
 	$(btn).dropdown();
 	
@@ -368,9 +352,7 @@ function setupPilotBtns(pilotData) {
 function addRow(pilotData) {
 	let model = pilotData.model;
 
-	let row = document.createElement('div');
-	row.classList.add('fleetRow');
-	globalData.fleetBody.appendChild(row);
+	let row = createDiv(globalData.fleetBody, '', 'fleetRow');
 	pilotData.rowDOM = row;
 
 	let cells = {};

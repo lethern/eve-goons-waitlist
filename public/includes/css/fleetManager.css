@@ -47,6 +47,10 @@
 	padding: 5px;
 }
 
+.smallFont {
+	font-size: 14px;
+}
+
 .greenLabel {
 	color: #7ff368;
 }
