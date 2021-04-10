@@ -128,6 +128,8 @@ let gServerStatusTime;
 let gSquadsData = {};
 let gActive = false;
 
+let gCurrentSquadDropmenu;
+
 function onSmallServerError(error) {
 
 	let smallError = createDiv(gSmallErrorDiv, 'Error occured! ' + error);
@@ -196,7 +198,7 @@ function setupFleetConfig() {
 	let line1 = createDiv(configDiv);
 	createLabel(line1, 'Active squad: ');
 	let activeSquad = globalData.currentSquad || 'select';
-	let dropmenu = createDropDownMenu(line1, activeSquad, showBtnMenu, squadOptions, { btnCss: 'squadBtns' });
+	gCurrentSquadDropmenu = createDropDownMenu(line1, activeSquad, showBtnMenu, squadOptions, { btnCss: 'squadBtns' });
 
 	//globalData.currentSquad = (squads[currentSquadId] || {}).name;
 	//globalData.waitlistSquad
@@ -214,6 +216,8 @@ function refreshSquads() {
 }
 
 function onSquadsList(args) {
+	console.log('onSquadsList', args);
+
 	if (args.error) {
 		onSmallServerError('Squads List: '+args.error);
 		return;
@@ -225,11 +229,23 @@ function onSquadsList(args) {
 	if (!squads) return;
 
 	gSquadsData = squads;
+	updateCurrentSquadDropmenu();
+
 	let currentSquadId = args.currentSquadId;
 	let waitlistSquadId = args.waitlistSquadId;
 
 	globalData.currentSquad = (squads[currentSquadId] || {}).name;
 	globalData.waitlistSquad = (squads[waitlistSquadId] || {}).name;
+
+}
+
+function updateCurrentSquadDropmenu() {
+	let squadOptions = [];
+	for (let it in gSquadsData) {
+		let squad = gSquadsData[it].name;
+		squadOptions.push(squad);
+	}
+	updateDropDownMenu(gCurrentSquadDropmenu, squadOptions);
 }
 
 function onFleetData(args) {
@@ -423,6 +439,7 @@ function createDropDownMenu(parent, text, onClick, options, config) {
 	btn.setAttribute('data-toggle', "dropdown");
 
 	let menu = createDiv(dropmenu, '', 'dropdown-menu');
+	dropmenu._menu = menu;
 
 	for (let op of options) {
 		addButton(menu, op);
@@ -432,6 +449,17 @@ function createDropDownMenu(parent, text, onClick, options, config) {
 
 	return dropmenu;
 }
+
+
+function updateDropDownMenu(dropmenu, options) {
+	let menu = dropmenu._menu;
+	menu.innerHTML = '';
+
+	for (let op of options) {
+		addButton(menu, op);
+	}
+}
+
 
 function setupPilotBtns(pilotData) {
 	let btnsDiv = pilotData.cellsDOM['squadBtn'];
