@@ -60,15 +60,19 @@ module.exports = function (http, port) {
 			if (!gFleetsData[fleetId]) {
 				gFleetsData[fleetId] = initNewFleetsData();
 				
-				////// TODO zamienic na session id
-				////// TODO zamienic na session id
-				////// TODO zamienic na session id
 			}
 			//gFleetsData[fleetId].socket = socket;
 
 			if (gFleetsData[fleetId].hasError) {
 				socket.emit('fleet_data', { error: gFleetsData[fleetId].errorMsg });
 			}
+		});
+
+		socket.on('getSquadsList', (params) => {
+			let fleetId = params.fleetId;
+			if (!fleetId) return;
+
+			socket.emit('squads_list', { error: 'test' });
 		});
 
 		socket.on('resetError', (params) => {
@@ -340,6 +344,8 @@ function refreshFleet(fleetId) {
 				if (squad) squadName = squad.name;
 				if (row.squadId == -1) squadName = row.roleName;//'Fleet commander';
 
+				let squadChanging = 0;
+
 				//let stationId = row.stationId;
 				//let stationName = gIDNames[stationId] || stationId;
 
@@ -355,6 +361,7 @@ function refreshFleet(fleetId) {
 					name: gUserNamesData[row.characterId],
 					main: null,
 					squad: squadName,
+					squadChanging: squadChanging,
 					shipsSub: [],
 					shipsAll: [],
 					timeActive: '',

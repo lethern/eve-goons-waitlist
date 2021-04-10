@@ -1,0 +1,20 @@
+{% include "./partials/header.njk" -%}
+{% include "./partials/nav.njk" %}
+<!-- Page Content -->
+<div class="page-content {{ "active" if userProfile.settings.smSideNav == true }}">
+	<section class="no-padding-top no-padding-bottom">
+		<div class="container-fluid">
+			<div class="row">
+				<!-- FC Table -->
+				<div class="col-sm-12">
+					<div class="statistic-block block">
+						Page disabled
+					</div>
+				</div>
+				<!-- End FC Table -->
+			</div>
+		</div>
+	</section>
+</div>
+</div>
+{%- include "./partials/footer.njk" %}

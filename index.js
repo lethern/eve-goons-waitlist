@@ -101,7 +101,7 @@ database.connect(function () {
 	}))
 
 	app.use(cookieParser());
-	app.use(session({ secret: setup.data.sessionSecret }));
+	app.use(session({ secret: setup.data.sessionSecret, resave: false, saveUninitialized: true }));
 	app.use(flash({ locals: 'flash' }));
 	app.use(passport.initialize());
 	app.use(passport.session());

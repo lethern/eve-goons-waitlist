@@ -104,13 +104,41 @@ const logger = createLogger({
   exceptionHandlers: getWinstonExceptionTransports()
 });
 
+function logError(msg, metadata) {
+	if (!metadata) {
+		logger.error(msg)
+		return;
+	}
+
+	let copy;
+	try {
+		copy = JSON.parse(JSON.stringify(object));
+	} catch (e) { }
+
+	if (!copy) {
+		logger.error(msg, metadata)
+		return;
+	}
+
+
+	if (copy.response && copy.response.req) {
+		copy.response.req.headers = undefined;
+		if (copy.response.req.header) {
+			copy.response.req.header = {
+				"x-esi-error-limit-remain": copy.response.req.header["x-esi-error-limit-remain"],
+				"x-esi-error-limit-reset": copy.response.req.header["x-esi-error-limit-reset"]
+			};
+		}
+	}
+	logger.error(msg, copy)
+}
+
 module.exports = (module) => {
-  const filename = getLabel(module.filename);
-  return {
-    info: (msg, metadata) => logger.info(`[${filename}]: ${msg}`,metadata),
-    debug: (msg, metadata) => logger.debug(`[${filename}]: ${msg}`, metadata),
-    warn: (msg, metadata) => logger.warn(`[${filename}]: ${msg}`, metadata),
-	  error: (msg, metadata) =>
-		  logger.error(`[${filename}]: ${msg}`, metadata)
-  }
+	const filename = getLabel(module.filename);
+	return {
+		info: (msg, metadata) => logger.info(`[${filename}]: ${msg}`,metadata),
+		debug: (msg, metadata) => logger.debug(`[${filename}]: ${msg}`, metadata),
+		warn: (msg, metadata) => logger.warn(`[${filename}]: ${msg}`, metadata),
+		error: (msg, metadata) => logError(`[${filename}]: ${msg}`, metadata),
+	}
 };
