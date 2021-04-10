@@ -401,7 +401,7 @@ function addButton(parent, text, callback, cssClss) {
 	
 	parent.appendChild(cell);
 	cell.textContent = text;
-	cell.addEventListener('click', callback);
+	if (callback) cell.addEventListener('click', callback);
 	return cell;
 }
 
@@ -447,7 +447,7 @@ function createDropDownMenu(parent, text, onClick, options, config) {
 	if (!config) config = {};
 	let dropmenu = createDiv(parent, '', 'dropdown');
 
-	let btn = addButton(dropmenu, text, onClick, config.btnCss);
+	let btn = addButton(dropmenu, text, null, config.btnCss);
 	btn.classList.add('dropdown-toggle');
 	btn.setAttribute('data-toggle', "dropdown");
 
