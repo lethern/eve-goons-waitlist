@@ -54,6 +54,7 @@
 .refreshSquads{
 	margin-left: 10px;
 	color: #b68888;
+	display: inline-block !important;
 }
 
 .greenLabel {
@@ -143,6 +144,13 @@
 	padding-right: 0px !important;
 }
 
+.squadBtns {
+	border-width: 1px;
+	border-radius: 3px;
+	border-color: #75787d;
+	background-color: #212224;
+}
+
 /* override */
 .dropdown-menu {
 	left: 0px !important;
@@ -152,7 +160,9 @@
 	background-color: #797878;
 	color: #e7e9ee;
 }
-
+.dropdown {
+	display: inline-block;
+}
 .dropdown-menu > .textButton {
 	white-space: nowrap;
 	padding: 1px 5px;

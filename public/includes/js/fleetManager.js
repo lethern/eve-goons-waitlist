@@ -97,7 +97,7 @@
 let socket = io({ autoConnect: false });
 
 socket.on("connect_error", (err) => {
-	console.log(`connect_error due to ${err.message}`);
+	console.log(`socket: connect_error due to ${err.message}`);
 	updateServerStatus('Connect error', 'redLabel');
 	//if (err.message === "invalid username") {
 	//	alert('Connection error');
@@ -106,6 +106,7 @@ socket.on("connect_error", (err) => {
 
 socket.on("connect", () => {
 	socket.sendBuffer = [];
+	console.log('socket: on connect');
 
 	socket.emit('listenForFleet', { fleetId: SERV_fleetId });
 	socket.emit('getSquadsList', { fleetId: SERV_fleetId });
@@ -194,7 +195,11 @@ function setupFleetConfig() {
 
 	let line1 = createDiv(configDiv);
 	createLabel(line1, 'Active squad: ');
-	let dropmenu = createDropDownMenu(line1, '...', showBtnMenu, squadOptions);
+	let activeSquad = globalData.currentSquad || 'select';
+	let dropmenu = createDropDownMenu(line1, activeSquad, showBtnMenu, squadOptions, { btnCss: 'squadBtns' });
+
+	//globalData.currentSquad = (squads[currentSquadId] || {}).name;
+	//globalData.waitlistSquad
 
 	let btn = addButton(line1, 'refresh', refreshSquads, 'refreshSquads');
 }
@@ -217,6 +222,8 @@ function onSquadsList(args) {
 	if (!gActive) return;
 
 	let squads = args.squads;
+	if (!squads) return;
+
 	gSquadsData = squads;
 	let currentSquadId = args.currentSquadId;
 	let waitlistSquadId = args.waitlistSquadId;
@@ -402,10 +409,11 @@ function showBtnMenu(event) {
 	//$(btnDiv.dropmenuDOM).dropdown();
 }
 
-function createDropDownMenu(parent, text, onClick, options) {
+function createDropDownMenu(parent, text, onClick, options, config) {
+	if (!config) config = {};
 	let dropmenu = createDiv(parent, '', 'dropdown');
 
-	let btn = addButton(dropmenu, text, onClick, 'pilotBtns');
+	let btn = addButton(dropmenu, text, onClick, config.btnCss);
 	btn.classList.add('dropdown-toggle');
 	btn.setAttribute('data-toggle', "dropdown");
 
@@ -427,7 +435,7 @@ function setupPilotBtns(pilotData) {
 	}
 	options.push('test');
 
-	let dropmenu = createDropDownMenu(btnsDiv, '...', showBtnMenu, options);
+	let dropmenu = createDropDownMenu(btnsDiv, '...', showBtnMenu, options, { btnCss: 'pilotBtns' });
 
 	dropmenu.pilotData = pilotData;
 
