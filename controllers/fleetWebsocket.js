@@ -5,6 +5,7 @@ const fleets = require('../models/fleets.js')(setup);
 const log = require('../logger.js')(module);
 const raw_io = require('socket.io');
 const ESI2 = require('eve_swagger_interface');
+const logger = require('../logger.js');
 
 const ESI2_defaultClient = ESI2.ApiClient.instance;
 const FleetsApi = new ESI2.FleetsApi();
@@ -100,16 +101,44 @@ module.exports = function (http, port) {
 
 			if (params.currentSquadId) {
 				gFleetsData[fleetId].currentSquadId = params.currentSquadId;
-				log.info('setting currentSquadId to ' + params.currentSquadId);
 
 				socket.emit('squads_list', { currentSquadId: params.currentSquadId });
 			}
 
 			if (params.waitlistSquadId) {
 				gFleetsData[fleetId].waitlistSquadId = params.waitlistSquadId;
-				log.info('setting waitlistSquadId to ' + params.waitlistSquadId);
 
 				socket.emit('squads_list', { waitlistSquadId: params.waitlistSquadId });
+			}
+		});
+
+		socket.on('moveMember', (params) => {
+			let fleetId = params.fleetId;
+			if (!fleetId) return;
+
+			let fleet = gFleetsData[fleetId];
+			if (!fleet) return;
+
+			let squadId = params.squadId;
+			let pilotId = params.pilotId;
+
+			if (!squadId || !pilotId) return;
+
+			var movement = new EveSwaggerInterface.PutFleetsFleetIdMembersMemberIdMovement();
+			movement.squadId = squadId;
+			movement.role = "squad_member";
+			movement.wingId = getWingIdFromSquad(fleetId, squadId);
+
+			var evesso = ESI2_defaultClient.authentications['evesso'];
+			evesso.accessToken = gFleetsData[fleetId].accessToken;
+
+			FleetsApi.putFleetsFleetIdMembersMemberId(fleetId, pilotId, movement, {}, moveCallback);
+
+			function moveCallback(error) {
+				if (error) {
+					logger.error('ESI moveMember error', error);
+					return;
+				}
 			}
 		});
 
@@ -121,6 +150,13 @@ module.exports = function (http, port) {
 	setInterval(refreshFleets, refresh_time);
 	log.info('refreshFleets started at ' + refresh_time);
 };
+
+function getWingIdFromSquad(fleetId, squadId) {
+	let squad = gFleetsData[fleetId].squads[squadId];
+	if (!squad) return null;
+
+	return squad.wing_id;
+}
 
 function initNewFleetsData() {
 	return {
@@ -159,7 +195,7 @@ function loadIDNames() {
 	
 	UniverseApi.postUniverseNames(IDsArray, {}, function (error, ESIdata) {
 		if (error) {
-			console.log('ESI universeNames error', error);
+			logger.error('ESI universeNames error', error);
 			return;
 		}
 		ESIdata.forEach(r => {
@@ -393,6 +429,7 @@ function refreshFleet(fleetId) {
 				let inFleet_mins = (new Date() - row.joinTime) / 60000;
 				
 				pilots.push({
+					id: row.characterId,
 					name: gUserNamesData[row.characterId],
 					main: null,
 					squad: squadName,
@@ -436,7 +473,7 @@ function refreshFleet(fleetId) {
 		gFleetsData[fleetId].errorsCount++;
 
 		if (gFleetsData[fleetId].errorsCount >= 5) {
-			console.log('max error (5) for fleetId=' + fleetId, msg);
+			logger.error('max error (5) for fleetId=' + fleetId, msg);
 			gFleetsData[fleetId].hasError = true;
 			gFleetsData[fleetId].errorMsg = msg;
 

@@ -77,6 +77,7 @@
 	/*
 	pilotData = {
 		model: {
+			id
 			name
 			main
 			squad
@@ -201,7 +202,9 @@ function setupFleetConfig() {
 	gCurrentSquadDropmenu = createDropDownMenu(line1, activeSquad, selectActiveSquad, squadOptions, { btnCss: 'squadBtns' });
 
 	//
-	let line2 = createDiv(configDiv);
+	gCurrentSquadDropmenu.style['margin-right'] = '25px';
+	let line2 = line1;//createDiv(configDiv);
+	//
 	createLabel(line2, 'Waitlist squad: ');
 	let waitlistSquad = globalData.waitlistSquad || 'select';
 	gWaitlistSquadDropmenu = createDropDownMenu(line2, waitlistSquad, selectWaitlistSquad, squadOptions, { btnCss: 'squadBtns' });
@@ -452,15 +455,20 @@ function moveToSquad(event) {
 	if (!targetSquad) return;
 
 	squad_down.classList.remove(...squad_down.classList);
-	squad_down.textContent = 'changing...';
+	squad_down.textContent = 'moving...';
 	squad_down.targetSquad = null;
 
-	the_webmethod_callback(pilotData, targetSquad);
+	let pilotId = pilotData.model.id;
+	let squadId = findSquadIdOfName(targetSquad);
 
-	function the_webmethod_callback(pilotData, targetSquad) {
-		pilotData.model.squad = targetSquad;
-		updateRow(pilotData);
-	};
+	socket.emit('moveMember', { fleetId: SERV_fleetId, squadId, pilotId });
+
+	//the_webmethod_callback(pilotData, targetSquad);
+
+	//function the_webmethod_callback(pilotData, targetSquad) {
+	//	pilotData.model.squad = targetSquad;
+	//	updateRow(pilotData);
+	//};
 };
 
 function showBtnMenu(event) {
@@ -651,12 +659,14 @@ function updateRow(pilotData) {
 
 						cells['squad_down'].textContent = globalData.waitlistSquad + ' <-';
 						cells['squad_down'].targetSquad = globalData.waitlistSquad;
+						cells['squad_down'].classList.add('blueSquad');
 					} else {
 						cells['squad_up'].classList.remove('greenSquad');
 						cells['squad_up'].classList.add('orangeSquad');
 
 						cells['squad_down'].textContent = '-> ' + globalData.currentSquad;
 						cells['squad_down'].targetSquad = globalData.currentSquad;
+						cells['squad_down'].classList.add('blueSquad');
 					}
 				}
 			break;
