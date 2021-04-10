@@ -116,6 +116,8 @@ socket.on("connect", () => {
 let globalPilotsData = {};
 let main;
 let errorDiv;
+let serverStatusDiv;
+let serverStatusTime;
 
 
 function onServerError(error) {
@@ -142,6 +144,10 @@ $(document).ready(() => {
 			return;
 		}
 
+		// dont change the "Connected" string
+		updateServerStatus('Connected', 'greenLabel');
+		serverStatusTime = new Date();
+
 		let model = args.pilots;
 
 		model.sort((a, b) => a.name - b.name);
@@ -155,6 +161,7 @@ $(document).ready(() => {
 	socket.connect();
 	//
 
+	setupHeader();
 	setupErrorDiv();
 
 	setupFleetTable();
@@ -178,7 +185,50 @@ $(document).ready(() => {
 		}
 		*/
 	}
+
+	setInterval(checkConnectionLoop, 1000);
 })
+
+function checkConnectionLoop() {
+	if (!serverStatusTime) return;
+	if (!serverStatusDiv || !serverStatusDiv.textContent.startsWith('Connected')) return;
+	let diff = (new Date()) - serverStatusTime;
+
+	diff = Math.round(diff / 1000);
+	serverStatusDiv.textContent = 'Connected (' + diff + ')';
+	if (diff > 7) {
+		serverStatusDiv.classList.add('yellowLabel');
+	} else {
+
+	}
+}
+
+
+
+function setupHeader() {
+	let head = document.createElement('div');
+	main.appendChild(head);
+
+	let statusDiv = document.createElement('div');
+	main.appendChild(statusDiv);
+
+	let label = document.createElement('span');
+	label.textContent = 'Server: ';
+	statusDiv.appendChild(label);
+
+	serverStatusDiv = document.createElement('span');
+	statusDiv.appendChild(serverStatusDiv);
+	updateServerStatus('connecting...');
+};
+
+function updateServerStatus(text, css) {
+	serverStatusDiv.textContent = text;
+	serverStatusDiv.classList.remove(...serverStatusDiv.classList);
+
+	if (css) {
+		serverStatusDiv.classList.add(css);
+	}
+};
 
 function setupErrorDiv() {
 	errorDiv = document.createElement('div');
