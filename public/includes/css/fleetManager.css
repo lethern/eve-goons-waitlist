@@ -148,3 +148,6 @@
 	background-color: #9d9d9d;
 }
 
+.mySpan{
+	display: inline-block !important;
+}

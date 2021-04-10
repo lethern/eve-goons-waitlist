@@ -198,11 +198,16 @@ function checkConnectionLoop() {
 	serverStatusDiv.textContent = 'Connected (' + diff + ')';
 	if (diff > 7) {
 		serverStatusDiv.classList.add('yellowLabel');
-	} else {
-
 	}
 }
 
+function createDiv(parent, text, css) {
+	let div = document.createElement('span');
+	if (css) div.classList.add(css);
+	div.textContent = text;
+	parent.appendChild(div);
+	return div;
+}
 
 
 function setupHeader() {
@@ -212,12 +217,9 @@ function setupHeader() {
 	let statusDiv = document.createElement('div');
 	main.appendChild(statusDiv);
 
-	let label = document.createElement('span');
-	label.textContent = 'Server: ';
-	statusDiv.appendChild(label);
+	createDiv(statusDiv, 'Server: ', 'mySpan');
 
-	serverStatusDiv = document.createElement('span');
-	statusDiv.appendChild(serverStatusDiv);
+	serverStatusDiv = createDiv(statusDiv, '', 'mySpan');
 	updateServerStatus('connecting...');
 };
 
