@@ -101,11 +101,15 @@ module.exports = function (http, port) {
 			if (params.currentSquadId) {
 				gFleetsData[fleetId].currentSquadId = params.currentSquadId;
 				log.info('setting currentSquadId to ' + params.currentSquadId);
+
+				socket.emit('squads_list', { currentSquadId: params.currentSquadId });
 			}
 
 			if (params.waitlistSquadId) {
 				gFleetsData[fleetId].waitlistSquadId = params.waitlistSquadId;
 				log.info('setting waitlistSquadId to ' + params.waitlistSquadId);
+
+				socket.emit('squads_list', { waitlistSquadId: params.waitlistSquadId });
 			}
 		});
 
