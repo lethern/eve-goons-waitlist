@@ -249,8 +249,13 @@ function onFleetData(args) {
 	model.sort((a, b) => a.name - b.name);
 
 	//let model = generateTestModel();
-	for (let entry in model) {
-		renderRow(model[entry]);
+	try {
+		for (let entry in model) {
+			renderRow(model[entry]);
+		}
+	} catch (e) {
+		console.log(e);
+		onSmallServerError('Client error');
 	}
 }
 
@@ -424,6 +429,8 @@ function createDropDownMenu(parent, text, onClick, options, config) {
 	}
 
 	$(btn).dropdown();
+
+	return dropmenu;
 }
 
 function setupPilotBtns(pilotData) {
