@@ -11,7 +11,6 @@ const statsController = require('./controllers/statisticsController.js');
 const waitlistController = require('./controllers/waitlistController.js');
 const fleetsController = require('./controllers/fleetController.js');
 //
-const disabled = require('./controllers/disabled.js').index;
 const contractCheck = require('./controllers/contractCheck.js');
 const fitsManager = require('./controllers/fitsManager.js');
 const skillsCheck = require('./controllers/skillsCheck.js');
