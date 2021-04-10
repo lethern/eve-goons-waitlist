@@ -10,7 +10,6 @@ const ESI2_defaultClient = ESI2.ApiClient.instance;
 const FleetsApi = new ESI2.FleetsApi();
 const UniverseApi = new ESI2.UniverseApi();
 
-let fleetWingsError = false;
 let gFleetsData = {};
 let gIDNames = {};
 let gUserNamesData = {};
@@ -72,7 +71,12 @@ module.exports = function (http, port) {
 			let fleetId = params.fleetId;
 			if (!fleetId) return;
 
-			socket.emit('squads_list', { error: 'test' });
+			//socket.emit('squads_list', { error: 'test' });
+
+			refreshFleetWings(fleetId,
+				function (data) {
+					socket.emit('squads_list', data);
+				});
 		});
 
 		socket.on('resetError', (params) => {
@@ -99,9 +103,8 @@ module.exports = function (http, port) {
 
 function initNewFleetsData() {
 	return {
-		toLoadSquads: new Set(),
+		toLoadSquads: false,
 		errorsCount: 0,
-
 	}
 }
 
@@ -114,8 +117,8 @@ function refreshFleets() {
 		if (gFleetsData[fleetId].hasError) continue;
 		refreshFleet(fleetId);
 
-		if (gFleetsData[fleetId].toLoadSquads.size > 0) {
-			gFleetsData[fleetId].toLoadSquads.clear();
+		if (gFleetsData[fleetId].toLoadSquads) {
+			gFleetsData[fleetId].toLoadSquads = false;
 			refreshFleetWings(fleetId);
 		}
 	}
@@ -129,7 +132,7 @@ function loadIDNames() {
 	let IDsArray = Array.from(gIDNames_toLoad);
 	gIDNames_toLoad.clear();
 
-	console.log('>> loadIDNames ' + IDsArray.length);
+//	console.log('>> loadIDNames ' + IDsArray.length);
 	
 	UniverseApi.postUniverseNames(IDsArray, {}, function (error, ESIdata) {
 		if (error) {
@@ -169,7 +172,7 @@ function loadSolarSystems() {
 function checkFleetToken(fleetId, callback, onError) {
 	if (!gFleetsData[fleetId].accessToken) {
 		if (!gFleetsData[fleetId].fleet || !gFleetsData[fleetId].fleet.fc) {
-			console.log('>> fleets.get');
+//			console.log('>> fleets.get');
 			fleets.get(fleetId, onFleetDB);
 			return false;
 		}
@@ -200,7 +203,7 @@ function checkFleetToken(fleetId, callback, onError) {
 	}
 
 	function getAccessToken() {
-		console.log('>> getRefreshToken');
+//		console.log('>> getRefreshToken');
 		user.getRefreshToken(gFleetsData[fleetId].fleet.fc.characterID, onUserToken);
 	}
 
@@ -232,7 +235,7 @@ function refreshFleet(fleetId) {
 			var evesso = ESI2_defaultClient.authentications['evesso'];
 			evesso.accessToken = gFleetsData[fleetId].accessToken;
 
-			console.log('>> prepareReadFleet -> getFleetsFleetIdWings');
+//			console.log('>> prepareReadFleet -> getFleetsFleetIdWings');
 			FleetsApi.getFleetsFleetIdWings(fleetId, {}, onWingsData);
 			return;
 		}
@@ -282,7 +285,7 @@ function refreshFleet(fleetId) {
 		let missingIDs = diffArray(charIDs, foundIDs);
 
 		if (missingIDs.length) {
-			console.log('>> users.findMultiple');
+//			console.log('>> users.findMultiple');
 			users.findMultiple(missingIDs, function (users) {
 				onDBLoadUsers(users, missingIDs, fleetData);
 			});
@@ -307,7 +310,7 @@ function refreshFleet(fleetId) {
 			var evesso = ESI2_defaultClient.authentications['evesso'];
 			evesso.accessToken = gFleetsData[fleetId].accessToken;
 
-			console.log('>> onDBLoadUsers -> postUniverseNames');
+//			console.log('>> onDBLoadUsers -> postUniverseNames');
 			UniverseApi.postUniverseNames(missingIDs, {}, function (error, ESIdata) {
 				if (error) {
 					onError('ESI universeNames error');
@@ -332,13 +335,13 @@ function refreshFleet(fleetId) {
 		prepareFleetData(fleetData);
 	}
 
-	function prepareFleetData(fleetData) {
+	function prepareFleetData(rows) {
 		try {
-			let gData = gFleetsData[fleetId];
-			let squads = gData.squads;
+			let fleetData = gFleetsData[fleetId];
+			let squads = fleetData.squads;
 
 			let pilots = [];
-			for (let row of fleetData) {
+			for (let row of rows) {
 				let squad = squads[row.squadId];
 				let squadName = '?';
 				if (squad) squadName = squad.name;
@@ -372,7 +375,7 @@ function refreshFleet(fleetId) {
 				});
 
 				if (row.squadId != -1 && squads[row.squadId] === undefined) {
-					gData.toLoadSquads.add(row.squadId);
+					fleetData.toLoadSquads = true;
 				}
 				if (solarSystemId > 0 && !gIDNames[solarSystemId]) {
 					gIDNames_toLoad.add(solarSystemId);
@@ -383,7 +386,6 @@ function refreshFleet(fleetId) {
 				
 			}
 
-//			console.log('prepareFleetData -> emitFleetData');
 			emitFleetData(pilots);
 
 		} catch (e) {
@@ -413,8 +415,10 @@ function refreshFleet(fleetId) {
 
 
 
-function refreshFleetWings(fleetId) {
-	if (!checkFleetToken(fleetId, getFleetWings, onError)) return;
+function refreshFleetWings(fleetId, callback) {
+	if (!checkFleetToken(fleetId, getFleetWings, onError)) {
+		return;
+	}
 
 	getFleetWings();
 	return;
@@ -423,7 +427,7 @@ function refreshFleetWings(fleetId) {
 		var evesso = ESI2_defaultClient.authentications['evesso'];
 		evesso.accessToken = gFleetsData[fleetId].accessToken;
 
-		console.log('>> refreshFleetWings -> getFleetsFleetIdWings');
+//		console.log('>> refreshFleetWings -> getFleetsFleetIdWings');
 		FleetsApi.getFleetsFleetIdWings(fleetId, {}, onWingsData);
 	};
 
@@ -443,12 +447,16 @@ function refreshFleetWings(fleetId) {
 				squads[squad.id] = { name: squad.name, wing: wing.name, wing_id: wing.id };
 			}
 		}
+
+		let currentSquadId = gFleetsData[fleetId].currentSquadId;
+		let waitlistSquadId = gFleetsData[fleetId].waitlistSquadId;
+		if (callback) callback({ squads, currentSquadId, waitlistSquadId });
 	}
 
 
 	function onError(error) {
 		log.error('refreshFleetWings', error);
-		fleetWingsError = true;
+		if (callback) callback({ error: error.message });
 	};
 }
 

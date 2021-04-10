@@ -32,14 +32,19 @@
 	</div>
 	<span class="heading">Pilot</span>
 	<ul class="list-unstyled">
+	<!--
 		<li{{  " class=active" if sideBarSelected === 1 }}><a href="/"><i class="fas fa-hourglass-half"></i> Waitlist</a></li>
+	-->
 		<li{{  " class=active" if sideBarSelected === 2 }}>
 		<a href="#myaccount" aria-expanded="false" data-toggle="collapse" class="collapsed"> <i class="fa fa-user"></i> My Account <i class="fas fa-sort-down float-right"></i></a>
 		<ul id="myaccount" class="collapse list-unstyled ">
 			<li><a href="/my-settings">My Settings</a></li>
+<!--
 			<li><a href="/test/skills-check">Skills check</a></li>
+-->
 		</ul>
 		</li>
+<!--
 		<li{{  " class=active" if sideBarSelected === 3 }}>
 		<a href="#squadtools" aria-expanded="false" data-toggle="collapse" class="collapsed"><i class="fa fa-users"></i> Squad Stuff <i class="fas fa-sort-down float-right"></i></a>
 		<ul id="squadtools" class="collapse list-unstyled" >
@@ -49,6 +54,7 @@
 			<li><a href="/squad-statistics">Squad Stats</a></li>
 		</ul>
 		</li>
+-->
 		<!-- <li> <a href="https://goonfleet.com/index.php/forum/273-incursions/" target="_blank"> <i class="fa fa-link"></i> Incursion Forums</a></li> -->
 	</ul>
 	{%- if userProfile.role.numeric > 0 %}   

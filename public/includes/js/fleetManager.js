@@ -124,6 +124,7 @@ let gErrorDiv;
 let gSmallErrorDiv;
 let gServerStatusDiv;
 let gServerStatusTime;
+let gSquadsData = {};
 
 
 function onSmallServerError(error) {
@@ -132,7 +133,7 @@ function onSmallServerError(error) {
 
 	setTimeout(() => {
 		gSmallErrorDiv.removeChild(smallError);
-	}, 10*1000);
+	}, 15*1000);
 }
 
 function onServerError(error) {
@@ -158,7 +159,7 @@ $(document).ready(() => {
 	socket.connect();
 
 	setupHeader();
-
+	setupFleetConfig();
 	setupFleetTable();
 
 	{
@@ -180,6 +181,30 @@ $(document).ready(() => {
 	setInterval(checkConnectionLoop, 1000);
 })
 
+function setupFleetConfig() {
+	let configDiv = createDiv(gMain, '');
+
+	let squadOptions = [];
+	for (let it in gSquadsData) {
+		let squad = gSquadsData[it].name;
+		squadOptions.push(squad);
+	}
+
+	let line1 = configDiv(gMain);
+	createLabel(line1, 'Active squad: ');
+	let dropmenu = createDropDownMenu(line1, '...', showBtnMenu, squadOptions);
+
+	let btn = addButton(line1, 'refresh', refreshSquads, 'refreshSquads');
+}
+
+function selectActiveSquad(event) {
+	let chosen = event.target.textContent;
+	alert(chosen);
+}
+
+function refreshSquads() {
+	socket.emit('getSquadsList', { fleetId: SERV_fleetId });
+}
 
 function onSquadsList(args) {
 	if (args.error) {
@@ -187,9 +212,13 @@ function onSquadsList(args) {
 		return;
 	}
 
+	let squads = args.squads;
+	gSquadsData = squads;
+	let currentSquadId = args.currentSquadId;
+	let waitlistSquadId = args.waitlistSquadId;
 
-	globalData.currentSquad = args.currentSquad;
-	globalData.waitlistSquad = args.waitlistSquad;
+	globalData.currentSquad = (squads[currentSquadId] || {}).name;
+	globalData.waitlistSquad = (squads[waitlistSquadId] || {}).name;
 }
 
 function onFleetData(args) {
@@ -239,13 +268,18 @@ function createDiv(parent, text, css) {
 	return div;
 }
 
+function createLabel(parent, text) {
+	let label = createDiv(parent, text, 'mySpan');
+	label.style["margin-right"] = "4px";
+	return label;
+}
+
 function setupHeader() {
 	gMainHead = createDiv(gMain, '');
 
 	let statusDiv = createDiv(gMainHead, '', 'smallFont');
 
-	let srv = createDiv(statusDiv, 'Server: ', 'mySpan');
-	srv.style["margin-right"] = "4px";
+	let srv = createLabel(statusDiv, 'Server: ');
 
 	gServerStatusDiv = createDiv(statusDiv, '', 'mySpan');
 	updateServerStatus('Connecting...');
@@ -362,29 +396,61 @@ function showBtnMenu(event) {
 	//$(btnDiv.dropmenuDOM).dropdown();
 }
 
-function setupPilotBtns(pilotData) {
-	let btnsDiv = pilotData.cellsDOM['squadBtn'];
-	let dropmenu = createDiv(btnsDiv, '', 'dropdown');
+function createDropDownMenu(parent, text, onClick, options) {
+	let dropmenu = createDiv(parent, '', 'dropdown');
 
-
-	let btn = addButton(dropmenu, '...', showBtnMenu, 'pilotBtns');
+	let btn = addButton(dropmenu, text, onClick, 'pilotBtns');
 	btn.classList.add('dropdown-toggle');
-	btn.pilotData = pilotData;
-	btn.dropmenuDOM = dropmenu;
 	btn.setAttribute('data-toggle', "dropdown");
 
 	let menu = createDiv(dropmenu, '', 'dropdown-menu');
-	//menu.style.display = 'none';
+
+	for (let op of options) {
+		addButton(menu, op);
+	}
 
 	$(btn).dropdown();
-	
-	btn.menuDOM = menu;
+}
 
+function setupPilotBtns(pilotData) {
+	let btnsDiv = pilotData.cellsDOM['squadBtn'];
+
+	let options = [];
 	if (!pilotData.model.gMain) {
-		addButton(menu, 'Connect to main');
+		options.push('Connect to main');
 	}
-	//addButton(menu, '2');
-	// 
+	options.push('test');
+
+	let dropmenu = createDropDownMenu(btnsDiv, '...', showBtnMenu, options);
+
+	dropmenu.pilotData = pilotData;
+
+	{
+		/*
+		let dropmenu = createDiv(btnsDiv, '', 'dropdown');
+	
+	
+		let btn = addButton(dropmenu, '...', showBtnMenu, 'pilotBtns');
+		btn.classList.add('dropdown-toggle');
+		btn.pilotData = pilotData;
+		btn.dropmenuDOM = dropmenu;
+		btn.setAttribute('data-toggle', "dropdown");
+	
+		let menu = createDiv(dropmenu, '', 'dropdown-menu');
+		//menu.style.display = 'none';
+	
+		$(btn).dropdown();
+		
+		btn.menuDOM = menu;
+	
+		if (!pilotData.model.gMain) {
+			addButton(menu, 'Connect to main');
+		}
+	
+		*/
+		//addButton(menu, '2');
+		// 
+	}
 }
 
 function addRow(pilotData) {
