@@ -5,6 +5,7 @@ const fleets = require('../models/fleets.js')(setup);
 const log = require('../logger.js')(module);
 const raw_io = require('socket.io');
 const ESI2 = require('eve_swagger_interface');
+const logger = require('../logger.js');
 
 const ESI2_defaultClient = ESI2.ApiClient.instance;
 const FleetsApi = new ESI2.FleetsApi();
@@ -98,19 +99,37 @@ module.exports = function (http, port) {
 			let fleet = gFleetsData[fleetId];
 			if (!fleet) return;
 
-			if (params.currentSquadId) {
-				gFleetsData[fleetId].currentSquadId = params.currentSquadId;
+			if (params.currentBoss) {
+				gFleetsData[fleetId].currentBoss = params.currentBoss;
+
+				users.findByName(params.currentBoss, function (bossPilot) {
+					fleets.updateCommander(fleetId, bossPilot, function (result) {
+						if (result == 200) {
+							gFleetsData[fleetId].fleet.fc = bossPilot;
+							gFleetsData[fleetId].accessToken = null;
+							log.debug('Changed boss for fleet ' + fleetId + ' to ' + params.currentBoss);
+							io.to('fleet' + fleetId).emit('squads_list', { currentBoss: params.currentBoss });
+						}
+					})
+				});
 
 				//socket.emit('squads_list', { currentSquadId: params.currentSquadId });
-				io.to('fleet' + fleetId).emit('squads_list', { currentSquadId: params.currentSquadId });
+				// squads, currentBoss
 			}
 
-			if (params.waitlistSquadId) {
-				gFleetsData[fleetId].waitlistSquadId = params.waitlistSquadId;
+//			if (params.currentSquadId) {
+//				gFleetsData[fleetId].currentSquadId = params.currentSquadId;
+//
+//				//socket.emit('squads_list', { currentSquadId: params.currentSquadId });
+//				io.to('fleet' + fleetId).emit('squads_list', { currentSquadId: params.currentSquadId });
+//			}
 
-				//socket.emit('squads_list', { waitlistSquadId: params.waitlistSquadId });
-				io.to('fleet' + fleetId).emit('squads_list', { waitlistSquadId: params.waitlistSquadId });
-			}
+//			if (params.waitlistSquadId) {
+//				gFleetsData[fleetId].waitlistSquadId = params.waitlistSquadId;
+//
+//				//socket.emit('squads_list', { waitlistSquadId: params.waitlistSquadId });
+//				io.to('fleet' + fleetId).emit('squads_list', { waitlistSquadId: params.waitlistSquadId });
+//			}
 		});
 
 		socket.on('moveMember', (params) => {
@@ -259,6 +278,11 @@ function checkFleetToken(fleetId, callback, onError) {
 		//		console.log('onFleetDB -> getAccessToken');
 
 		gFleetsData[fleetId].fleet = foundFleet;
+
+		if (gFleetsData[fleetId].fleet.fc) {
+			gFleetsData[fleetId].currentBoss = gFleetsData[fleetId].fleet.fc.name;
+		}
+
 		getAccessToken();
 	}
 
@@ -269,7 +293,7 @@ function checkFleetToken(fleetId, callback, onError) {
 
 	function onUserToken(foundAccessToken) {
 		if (!foundAccessToken) {
-			onError('accessToken error');
+			onError('Fleet Boss Auth error (accessToken)');
 			return;
 		}
 
@@ -338,7 +362,9 @@ function refreshFleet(fleetId) {
 			onError('ESI fleet error');
 
 			if (error.status == 403 && error.response && error.response.text) {
-				if ((error.response.text.includes && error.response.text.includes('sso_status')) || error.response.text["sso_status"] == 401) {
+				if (((error.response.text.includes && error.response.text.includes('sso_status')) || error.response.text["sso_status"] == 401)
+					|| ((error.response.text.includes && error.response.text.includes('token is expired')) || error.response.text["error"] == 'token is expired')
+				) {
 					log.info('resseting token');
 					gFleetsData[fleetId].accessToken = null;
 				} else {
@@ -515,13 +541,21 @@ function refreshFleetWings(fleetId, callback) {
 		for (let wing of data) {
 			// wing.id, wing.name, wing.squads
 			for (let squad of wing.squads) {
-				squads[squad.id] = { name: squad.name, wing: wing.name, wing_id: wing.id };
+				squads[squad.id] = {
+					name: squad.name, wing: wing.name, wing_id: wing.id,
+				};
 			}
 		}
 
-		let currentSquadId = gFleetsData[fleetId].currentSquadId;
-		let waitlistSquadId = gFleetsData[fleetId].waitlistSquadId;
-		if (callback) callback({ squads, currentSquadId, waitlistSquadId });
+		//currentSquadId: gFleetsData[fleetId].currentSquadId,
+		//waitlistSquadId: gFleetsData[fleetId].waitlistSquadId,
+
+
+		//let currentSquadId = gFleetsData[fleetId].currentSquadId;
+		//let waitlistSquadId = gFleetsData[fleetId].waitlistSquadId;
+		//if (callback) callback({ squads, currentSquadId, waitlistSquadId });
+		let currentBoss = gFleetsData[fleetId].currentBoss;
+		if (callback) callback({ squads, currentBoss });
 	}
 
 

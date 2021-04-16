@@ -8,7 +8,7 @@ const day = 86400;//Day in seconds
 
 module.exports = function (setup) {
 	var module = {};
-	
+
 	//Create and manage users
 	module.findOrCreateUser = function (users, refreshToken, characterDetails, cb) {
 		//Update the users refresh token
@@ -34,6 +34,17 @@ module.exports = function (setup) {
 	module.findAndReturnUser = function (checkID, cb) {
 		db.find({ 'characterID': checkID }).toArray(function (err, docs) {
 			if (err) log.error("findAndReturnUser: Error for db.find.toArray", { err, checkID });
+			if (docs.length === 0) {
+				cb(false)
+			} else {
+				cb(docs[0])
+			}
+		});
+	};
+
+	module.findByName = function (name, cb) {
+		db.find({ 'name': name }).toArray(function (err, docs) {
+			if (err) log.error("findByName: Error ", { err, name });
 			if (docs.length === 0) {
 				cb(false)
 			} else {

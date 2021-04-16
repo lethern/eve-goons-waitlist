@@ -159,7 +159,7 @@
 /* override */
 .dropdown-menu {
 	left: 0px !important;
-	min-width: 150px !important;
+	min-width: 200px !important;
 	margin-top: 0px !important;
 	border-radius: 3px;
 	background-color: #797878;
@@ -182,4 +182,25 @@
 
 .dropdown-item{
 	cursor: pointer;
+}
+
+.boss2Input {
+	margin: 0px 10px;
+	border: 1px solid;
+	border-radius: 3px;
+	border-color: #75787d;
+	background-color: #212224;
+	padding: 0px 6px;
+	font-size: 13px;
+	color: #8a8d93;
+}
+
+.boss2Btn {
+	border: 1px solid;
+	border-radius: 3px;
+	border-color: #75787d;
+	background-color: #212224;
+	padding: 0px 4px;
+	display: inline-block;
+	font-size: 11px;
 }

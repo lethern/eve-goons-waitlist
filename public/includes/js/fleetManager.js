@@ -72,6 +72,29 @@
 	*/
 }
 
+
+
+/*
+// todo:
+// * when error occurs and someone clicks the "Retry", the connection
+//  resumes, but the error hides only for the person who clicked, not the rest
+// * after 5min, reset error count
+ -------------------------------
+ ---------(show/hide bar)-------
+ | Fleet Boss:  Bobman   [change Boss]
+ |   [refresh squads]
+ | Squad 1    Active Squad: [select]   Waitlist Squad: [select]     [remove squad]
+ | Squad 2
+ | [add squad]
+ --------------------------------
+// * the active squad/waitlist squad is per squad, which means
+//  the arrows will change when we "assign ourself" to different squad (e.g by changing filter or button, like "My active squad")
+// * need to support errors better - right now just the "move player" - might result in an error, so we should add
+//  a timer to un-stuck it, so FC can click it again (the "moving...")
+//  (easy to test - open website, close server, click "move", start server)
+ */
+
+
 // docs
 {
 	/*
@@ -115,6 +138,7 @@ socket.on("connect", () => {
 let globalData = {
 	// currentSquad
 	// waitlistSquad
+	// currentBoss
 };
 
 // by pilot name
@@ -130,6 +154,7 @@ let gActive = false;
 
 let gCurrentSquadDropmenu;
 let gWaitlistSquadDropmenu;
+let gFleetBossDropmenu;
 
 function onSmallServerError(error) {
 
@@ -197,20 +222,47 @@ function setupFleetConfig() {
 	}
 
 	let line1 = createDiv(configDiv);
-	createLabel(line1, 'Active squad: ');
+	createLabel(line1, 'My active squad: ');
 	let activeSquad = globalData.currentSquad || 'select';
 	gCurrentSquadDropmenu = createDropDownMenu(line1, activeSquad, selectActiveSquad, squadOptions, { btnCss: 'squadBtns' });
-
-	//
 	gCurrentSquadDropmenu.style['margin-right'] = '25px';
-	let line2 = line1;//createDiv(configDiv);
-	//
-	createLabel(line2, 'Waitlist squad: ');
-	let waitlistSquad = globalData.waitlistSquad || 'select';
-	gWaitlistSquadDropmenu = createDropDownMenu(line2, waitlistSquad, selectWaitlistSquad, squadOptions, { btnCss: 'squadBtns' });
 
+	createLabel(line1, 'Waitlist squad: ');
+	let waitlistSquad = globalData.waitlistSquad || 'select';
+	gWaitlistSquadDropmenu = createDropDownMenu(line1, waitlistSquad, selectWaitlistSquad, squadOptions, { btnCss: 'squadBtns' });
 
 	let btn = addButton(line1, 'refresh', refreshSquads, 'refreshSquads');
+
+	let pilotsList = getAllPilotNames();
+	//
+
+	let line2 = line1; //createDiv(configDiv);
+	let boss_label = createLabel(line2, 'Fleet Boss: ');
+	boss_label.style['margin-left'] = '200px';
+	let activeBoss = globalData.currentBoss;
+	gFleetBossDropmenu = createDropDownMenu(line2, activeBoss, selectCurrentBoss, pilotsList, { btnCss: 'squadBtns' });
+
+	//
+	let boss2_label = createLabel(line2, "(can't find? type here)")
+	boss2_label.style['margin-left'] = '50px';
+	boss2_label.style['fontSize'] = '13px';
+	let boss2_input = document.createElement('input');
+	boss2_input.classList.add('boss2Input');
+	line2.appendChild(boss2_input);
+
+	addButton(line2, '>', function () {
+		let boss = boss2_input.value;
+		boss2_input.value = '';
+		socket.emit('setFleetConfig', { fleetId: SERV_fleetId, currentBoss: boss });
+	}, 'boss2Btn');
+}
+
+function getAllPilotNames() {
+	let names = [];
+	for (let name in gPilotsData) {
+		names.push(name);
+	}
+	return names.sort();
 }
 
 function findSquadIdOfName(argName) {
@@ -224,14 +276,27 @@ function findSquadIdOfName(argName) {
 function selectActiveSquad(event) {
 	let chosen = event.target.textContent;
 
-	socket.emit('setFleetConfig', { fleetId: SERV_fleetId, currentSquadId: findSquadIdOfName(chosen) });
+	globalData.currentSquadId = findSquadIdOfName(chosen);
+	globalData.currentSquad = chosen;
+	updateCurrentSquad();
 }
 
 function selectWaitlistSquad(event) {
 	let chosen = event.target.textContent;
 
-	socket.emit('setFleetConfig', { fleetId: SERV_fleetId, waitlistSquadId: findSquadIdOfName(chosen) });
+	//socket.emit('setFleetConfig', { fleetId: SERV_fleetId, waitlistSquadId: findSquadIdOfName(chosen) });
+	globalData.waitlistSquadId = findSquadIdOfName(chosen);
+	globalData.waitlistSquad = chosen;
+	updateWaitlistSquad();
 }
+
+function selectCurrentBoss(event) {
+	let chosen = event.target.textContent;
+
+	socket.emit('setFleetConfig', { fleetId: SERV_fleetId, currentBoss: chosen });
+}
+
+
 
 function refreshSquads() {
 	socket.emit('getSquadsList', { fleetId: SERV_fleetId });
@@ -245,23 +310,27 @@ function onSquadsList(args) {
 
 	if (!gActive) return;
 
-	
 	if (args.squads) {
 		gSquadsData = args.squads;
 		updateCurrentSquadDropmenu();
 	}
 
-	if (args.currentSquadId) {
-		let currentSquadId = args.currentSquadId;
-		globalData.currentSquad = (gSquadsData[currentSquadId] || {}).name;
-		updateCurrentSquad();
+	if (args.currentBoss) {
+		globalData.currentBoss = args.currentBoss;
+		updateCurrentBoss();
 	}
 
-	if (args.waitlistSquadId) {
-		let waitlistSquadId = args.waitlistSquadId;
-		globalData.waitlistSquad = (gSquadsData[waitlistSquadId] || {}).name;
-		updateWaitlistSquad();
-	}
+	//if (args.currentSquadId) {
+	//	let currentSquadId = args.currentSquadId;
+	//	globalData.currentSquad = (gSquadsData[currentSquadId] || {}).name;
+	//	updateCurrentSquad();
+	//}
+	//
+	//if (args.waitlistSquadId) {
+	//	let waitlistSquadId = args.waitlistSquadId;
+	//	globalData.waitlistSquad = (gSquadsData[waitlistSquadId] || {}).name;
+	//	updateWaitlistSquad();
+	//}
 }
 
 function updateCurrentSquad() {
@@ -274,6 +343,10 @@ function updateWaitlistSquad() {
 	gWaitlistSquadDropmenu._btn.textContent = waitlistSquad;
 }
 
+function updateCurrentBoss() {
+	let currentBoss = globalData.currentBoss;
+	gFleetBossDropmenu._btn.textContent = currentBoss;
+}
 
 function updateCurrentSquadDropmenu() {
 	let squadOptions = [];
@@ -281,8 +354,15 @@ function updateCurrentSquadDropmenu() {
 		let squad = gSquadsData[it].name;
 		squadOptions.push(squad);
 	}
+
+	globalData.currentSquad = (gSquadsData[globalData.currentSquadId] || {}).name;
+	globalData.waitlistSquad = (gSquadsData[globalData.waitlistSquadId] || {}).name;
+
 	updateDropDownMenu(gCurrentSquadDropmenu, squadOptions, selectActiveSquad);
 	updateDropDownMenu(gWaitlistSquadDropmenu, squadOptions, selectWaitlistSquad);
+
+	let pilotsList = getAllPilotNames();
+	updateDropDownMenu(gFleetBossDropmenu, pilotsList, selectCurrentBoss);
 }
 
 function onFleetData(args) {
@@ -299,9 +379,8 @@ function onFleetData(args) {
 
 	let model = args.pilots;
 
-	model.sort((a, b) => a.name - b.name);
-
-	//let model = generateTestModel();
+	model.sort((a, b) => a.name.localeCompare(b.name));
+	
 	try {
 		//pilotData
 		updateFleetModel(model);
@@ -315,6 +394,7 @@ function onFleetData(args) {
 		socket.emit('getSquadsList', { fleetId: SERV_fleetId });
 	}
 }
+
 function updateFleetModel(model) {
 	for (let name in gPilotsData) {
 		let obj = gPilotsData[name];
