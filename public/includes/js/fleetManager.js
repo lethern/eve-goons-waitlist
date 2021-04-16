@@ -180,7 +180,7 @@ function onServerError(error) {
 	}
 };
 
-const IS_TEST = true;
+const IS_TEST = false;
 
 $(document).ready(() => {
 	gMain = document.getElementById('main');
