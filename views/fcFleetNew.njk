@@ -6,14 +6,10 @@
 <link rel="stylesheet" href="/includes/css/fleetManager.css?v=1">
 
 <script>
-	window.SERV_pilots = '{{ pilots | safe }}';
 	window.SERV_fleetId = {{ fleetId | safe }};
 </script>
 <!-- Page Content -->
 <div class="page-content {{ "active" if userProfile.settings.smSideNav == true }}">
-<div class="page-header">
-	
-</div>
 
 <section class="no-padding-top no-padding-bottom">
 	<div class="container-fluid">

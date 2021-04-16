@@ -1,26 +1,25 @@
 {
-	/*
 	function generateTestModel() {
 		return [{
 			name: 'lethern Zell',
 			main: null,
-			squad: 'Fleet 1',
+			squad: 'Squad 1',
 			shipsSub: ['basi', 'huginn', 'gila'],
 			shipsAll: ['gnosis', 'praxi'],
-			timeActive: '1:30',
-			timeWaitlist: '-',
-			timeTotal: '1:38',
+			timeActive: '500',
+			timeWaitlist: '0',
+			timeTotal: '500',
 			ship: 'Basilisk',
 			system: 'Jita',
 		},{
 			name: 'saelen saal',
 			main: 'lethern Zell',
-			squad: 'Waitlist',
+			squad: 'Squad 2',
 			shipsSub: ['gila'],
 			shipsAll: ['gnosis', 'praxi'],
-			timeActive: '0:15',
-			timeWaitlist: '0:30',
-			timeTotal: '1:38',
+			timeActive: '234',
+			timeWaitlist: '234',
+			timeTotal: '234',
 			ship: 'Capsule',
 			system: 'Hek',
 		},{
@@ -29,9 +28,9 @@
 			squad: 'Waitlist',
 			shipsSub: ['gila'],
 			shipsAll: [],
-			timeActive: '-',
-			timeWaitlist: '0:10',
-			timeTotal: '0:10',
+			timeActive: '0',
+			timeWaitlist: '30',
+			timeTotal: '30',
 			ship: 'Gila',
 			system: 'Jita',
 		},{
@@ -40,9 +39,9 @@
 			squad: 'Waitlist',
 			shipsSub: ['gila', 'praxi'],
 			shipsAll: [],
-			timeActive: '-',
-			timeWaitlist: '0:17',
-			timeTotal: '0:17',
+			timeActive: '70',
+			timeWaitlist: '100',
+			timeTotal: '170',
 			ship: 'Gila',
 			system: 'Jita',
 		},{
@@ -51,9 +50,9 @@
 			squad: 'Waitlist',
 			shipsSub: ['gila', 'praxi'],
 			shipsAll: [],
-			timeActive: '-',
-			timeWaitlist: '0:17',
-			timeTotal: '0:17',
+			timeActive: '0',
+			timeWaitlist: '100',
+			timeTotal: '100',
 			ship: 'Capsule',
 			system: 'Jita',
 		},{
@@ -62,14 +61,13 @@
 			squad: 'Waitlist',
 			shipsSub: ['praxi'],
 			shipsAll: [],
-			timeActive: '-',
-			timeWaitlist: '0:17',
-			timeTotal: '0:17',
+			timeActive: '0',
+			timeWaitlist: '100',
+			timeTotal: '100',
 			ship: 'Gila',
 			system: 'Jita',
 		}];
 	};
-	*/
 }
 
 
@@ -155,10 +153,13 @@ let gActive = false;
 let gCurrentSquadDropmenu;
 let gWaitlistSquadDropmenu;
 let gFleetBossDropmenu;
+let gConfigDiv;
+
+let gGroupingOption ='all';
 
 function onSmallServerError(error) {
 
-	let smallError = createDiv(gSmallErrorDiv, 'Error occured! ' + error);
+	let smallError = createDiv(gSmallErrorDiv, 'Error occured: ' + error);
 
 	setTimeout(() => {
 		gSmallErrorDiv.removeChild(smallError);
@@ -169,7 +170,7 @@ function onServerError(error) {
 	gErrorDiv.innerHTML = '';
 	gErrorDiv.style.display = 'block';
 
-	let msg = createDiv(gErrorDiv, 'Error occured! ' + error);
+	let msg = createDiv(gErrorDiv, 'Server error! ' + error);
 	let btn = addButton(gErrorDiv, 'Retry', callback, 'errorBtn');
 
 	function callback() {
@@ -179,49 +180,38 @@ function onServerError(error) {
 	}
 };
 
+const IS_TEST = true;
+
 $(document).ready(() => {
 	gMain = document.getElementById('main');
 
 	socket.on('fleet_data', onFleetData);
 	socket.on('squads_list', onSquadsList);
 
-	socket.connect();
+	if (!IS_TEST) {
+		socket.connect();
+		setInterval(checkConnectionLoop, 1000);
+	}
 
 	setupHeader();
 	setupFleetConfig();
+	setupTableTabs();
 	setupFleetTable();
 
-	gActive = true;
-
-	{
-		/*
-		let model = JSON.parse(SERV_pilots);
-		//let model = generateTestModel();
-		let data = [];
-		for (let entry in model) {
-			let pilotData = {};
-			pilotData.model = model[entry];
-	
-			addRow(pilotData);
-	
-			data.push(pilotData);
-		}
-		*/
+	if (IS_TEST) {
+		setupDevTest();
 	}
 
-	setInterval(checkConnectionLoop, 1000);
+	gActive = true;
 })
 
+
 function setupFleetConfig() {
-	let configDiv = createDiv(gMain);
+	gConfigDiv = createDiv(gMain, '', 'configDiv');
 
-	let squadOptions = [];
-	for (let it in gSquadsData) {
-		let squad = gSquadsData[it].name;
-		squadOptions.push(squad);
-	}
+	let squadOptions = getSquadList();
 
-	let line1 = createDiv(configDiv);
+	let line1 = createDiv(gConfigDiv);
 	createLabel(line1, 'My active squad: ');
 	let activeSquad = globalData.currentSquad || 'select';
 	gCurrentSquadDropmenu = createDropDownMenu(line1, activeSquad, selectActiveSquad, squadOptions, { btnCss: 'squadBtns' });
@@ -236,7 +226,7 @@ function setupFleetConfig() {
 	let pilotsList = getAllPilotNames();
 	//
 
-	let line2 = line1; //createDiv(configDiv);
+	let line2 = line1; //createDiv(gConfigDiv);
 	let boss_label = createLabel(line2, 'Fleet Boss: ');
 	boss_label.style['margin-left'] = '200px';
 	let activeBoss = globalData.currentBoss;
@@ -244,7 +234,7 @@ function setupFleetConfig() {
 
 	//
 	let boss2_label = createLabel(line2, "(can't find? type here)")
-	boss2_label.style['margin-left'] = '50px';
+	boss2_label.style['margin-left'] = '40px';
 	boss2_label.style['fontSize'] = '13px';
 	let boss2_input = document.createElement('input');
 	boss2_input.classList.add('boss2Input');
@@ -302,6 +292,30 @@ function refreshSquads() {
 	socket.emit('getSquadsList', { fleetId: SERV_fleetId });
 }
 
+function setupDevTest() {
+	gActive = true;
+	socket.emit = function (name) { console.log('socket.emit ' + name); }
+
+	let squads = {
+		'1': { name: 'Squad 1' },
+		'2': { name: 'Squad 2' },
+		'3': { name: 'Waitlist' },
+		'4': { name: 'Alt' },
+	};
+
+	let currentBoss = 'lethern Zell';
+	let model = generateTestModel();
+
+	onSquadsList({ squads, currentBoss });
+
+	globalData.currentSquadId = 1;
+	globalData.waitlistSquadId = 3;
+	updateCurrentSquadDropmenu();
+
+
+	onFleetData({ pilots: model });
+}
+
 function onSquadsList(args) {
 	if (args.error) {
 		onSmallServerError('Squads List: '+args.error);
@@ -348,22 +362,27 @@ function updateCurrentBoss() {
 	gFleetBossDropmenu._btn.textContent = currentBoss;
 }
 
-function updateCurrentSquadDropmenu() {
+function getSquadList() {
 	let squadOptions = [];
 	for (let it in gSquadsData) {
 		let squad = gSquadsData[it].name;
 		squadOptions.push(squad);
 	}
+	return squadOptions.sort();
+}
 
+function updateCurrentSquadDropmenu() {
 	globalData.currentSquad = (gSquadsData[globalData.currentSquadId] || {}).name;
 	globalData.waitlistSquad = (gSquadsData[globalData.waitlistSquadId] || {}).name;
 
+	let squadOptions = getSquadList();
 	updateDropDownMenu(gCurrentSquadDropmenu, squadOptions, selectActiveSquad);
 	updateDropDownMenu(gWaitlistSquadDropmenu, squadOptions, selectWaitlistSquad);
 
 	let pilotsList = getAllPilotNames();
 	updateDropDownMenu(gFleetBossDropmenu, pilotsList, selectCurrentBoss);
 }
+
 
 function onFleetData(args) {
 	if (args.error) {
@@ -402,8 +421,20 @@ function updateFleetModel(model) {
 	}
 
 	for (let entry in model) {
-		renderRow(model[entry]);
+		let pilotModel = model[entry];
+		let name = pilotModel.name;
+
+		let obj = gPilotsData[name];
+		if (!obj) {
+			obj = gPilotsData[name] = {};
+		}
+		obj.model = pilotModel;
+		obj.inactive = false;
 	}
+
+	renderRows();
+
+	rerenderTable();
 
 	for (let name in gPilotsData) {
 		let obj = gPilotsData[name];
@@ -420,6 +451,16 @@ function updateFleetModel(model) {
 				}
 			}
 		}
+	}
+}
+
+
+function renderRows() {
+	for (let name in gPilotsData) {
+		let pilotData = gPilotsData[name];
+		if (pilotData.inactive) continue;
+
+		updateRow(pilotData);
 	}
 }
 
@@ -466,12 +507,23 @@ function setupHeader() {
 	gServerStatusDiv = createDiv(statusDiv, '', 'mySpan');
 	updateServerStatus('Connecting...');
 
+	// tabs
+	let configTabBtn = addButton(statusDiv, 'Config', onConfigTab, 'tabBtn');
+	configTabBtn.style['margin-left'] = '50px';
+
 	// setupErrorDiv
 	gErrorDiv = createDiv(gMainHead, '', 'errorDiv');
 	gErrorDiv.style.display = 'none';
 
 	gSmallErrorDiv = createDiv(gMainHead, '');
 };
+
+function onConfigTab() {
+	if (gConfigDiv.style.display == 'none')
+		gConfigDiv.style.display = 'block';
+	else
+		gConfigDiv.style.display = 'none';
+}
 
 function updateServerStatus(text, css) {
 	if (!gServerStatusDiv) return;
@@ -484,21 +536,6 @@ function updateServerStatus(text, css) {
 		gServerStatusDiv.classList.add(css);
 	}
 };
-
-function renderRow(pilotModel) {
-	let name = pilotModel.name;
-	let obj = gPilotsData[name];
-	if (obj) {
-		obj.model = pilotModel;
-		updateRow(obj);
-	} else {
-		obj = gPilotsData[name] = {};
-		obj.model = pilotModel;
-		addRow(obj);
-	}
-
-	obj.inactive = false;
-}
 
 let colsStruct = [
 	{ name: 'name',			label: 'Pilot', width: 200},
@@ -515,25 +552,33 @@ let colsStruct = [
 	{ name: 'timeTotal',	label: 'Time total', width: 60},
 ];
 
-function setupFleetTable() {
-	let fleetTable = createDiv(gMain, '', 'fleetTable');
-	globalData.fleetTable = fleetTable;
+function setupTableTabs() {
+	let tabs = createDiv(gMain, '', 'tableTabs');
 
-	let colgroup = createDiv(fleetTable, '', 'fleetColGroup');
+	createLabel(tabs, 'Group by:');
+	addButton(tabs, 'All', onTab.bind(null, 'all'));
+	addButton(tabs, 'Squads', onTab.bind(null,'squads'));
+	addButton(tabs, 'Main-Alt', onTab.bind(null,'alts'));
 
-	let ths = createDiv(fleetTable, '', 'fleetHeadGroup');
-
-	for (let col of colsStruct) {
-		if (col.disabled) continue;
-
-		let colDiv = createDiv(colgroup, '', 'fleetColumn');
-		colDiv.style.width = col.width + 'px';
-
-		let th = createDiv(ths, col.label, 'fleetHeader');
+	function onTab(param) {
+		if (gGroupingOption == 'alts' && param == 'alts') {
+			gGroupingOption = 'alts2';
+		} else if (gGroupingOption == 'alts2' && param == 'alts') {
+			gGroupingOption = 'alts';
+		}else {
+			gGroupingOption = param;
+		}
+		rerenderTable();
 	}
+}
 
-	let body = createDiv(fleetTable, '', 'fleetBody');
-	globalData.fleetBody = body;
+function setupFleetTable() {
+
+	globalData.fleetTablesDOM = createDiv(gMain, '');
+
+	globalData.tables = {};
+
+	getOrCreateTable('all');
 };
 
 function addCell(parent, text, cssClss) {
@@ -674,8 +719,9 @@ function setupPilotBtns(pilotData) {
 function addRow(pilotData) {
 	let model = pilotData.model;
 
-	let row = createDiv(globalData.fleetBody, '', 'fleetRow');
+	let row = createDiv(getOrCreateTable('all')._body, '', 'fleetRow');
 	pilotData.rowDOM = row;
+	movePilotToTable(pilotData);
 
 	let cells = {};
 	pilotData.cellsDOM = cells;
@@ -727,17 +773,157 @@ function addRow(pilotData) {
 		}
 	}
 	
-	
 	setupPilotBtns(pilotData);
 
 	if (!model.main) row.classList.add('rowMain')
 	else row.classList.add('rowAlt');
-
-	updateRow(pilotData);
 };
 
+function getOrCreateTable(name) {
+	if (!globalData.tables[name]) {
+		
+		let fleetTable = createDiv(globalData.fleetTablesDOM, '', 'fleetTable');
+			//createDiv(globalData.fleetTablesDOM, '', 'fleetBody');
+		globalData.tables[name] = fleetTable;
+
+		let caption = createDiv(fleetTable, name, 'fleetHeadCaption');
+		caption.addEventListener('click', onHeadCaptionClick);
+
+		let colgroup = createDiv(fleetTable, '', 'fleetColGroup');
+
+		let ths = createDiv(fleetTable, '', 'fleetHeadGroup');
+		fleetTable._ths = ths;
+
+		for (let col of colsStruct) {
+			if (col.disabled) continue;
+
+			let colDiv = createDiv(colgroup, '', 'fleetColumn');
+			colDiv.style.width = col.width + 'px';
+
+			let th = createDiv(ths, col.label, 'fleetHeader');
+		}
+
+		fleetTable._body = createDiv(fleetTable, '', 'fleetBody');
+		fleetTable._add = [];
+	}
+	return globalData.tables[name];
+}
+
+function onHeadCaptionClick(event) {
+	let caption = event.target;
+	let table = caption.parentNode;
+	if (table._collapsed) {
+		table._body.style.display = 'table-row-group';
+		table._ths.style.display = 'table-header-group';
+	} else {
+		table._body.style.display = 'none';
+		table._ths.style.display = 'none';
+	}
+	table._collapsed = !table._collapsed;
+}
+
+function movePilotToTable(pilotData) {
+	switch (gGroupingOption) {
+		case 'all':
+			//getOrCreateTable('all')._body.appendChild(row);
+			getOrCreateTable('all')._add.push(pilotData);
+			
+			break;
+		case 'squads':
+			//globalData.fleetBody = createDiv(fleetTable, '', 'fleetBody');
+			let squad = pilotData.model.squad;
+			if (['all', 'alts'].includes(squad)) squad = squad + '_';
+
+			getOrCreateTable(squad)._add.push(pilotData);
+			break;
+		case 'alts':
+			if (pilotData.model.main) {
+				getOrCreateTable('alts')._add.push(pilotData);
+			} else {
+				getOrCreateTable('all')._add.push(pilotData);
+			}
+			break;
+		case 'alts2':
+			getOrCreateTable('alts')._add.push(pilotData);
+			break;
+	}
+}
+
+function rerenderTable() {
+
+	// detach all
+	let tmp = document.createDocumentFragment();
+	for (let name in gPilotsData) {
+		let pilotData = gPilotsData[name];
+		tmp.appendChild(pilotData.rowDOM);
+	}
+
+	for (let name in gPilotsData) {
+		let pilotData = gPilotsData[name];
+
+		movePilotToTable(pilotData);
+	}
+
+	// render / cleartables
+	for (let it in globalData.tables) {
+		let table = globalData.tables[it];
+
+		if (['alts', 'alts2'].includes(gGroupingOption) && it == 'alts') {
+			table._add.sort((a, b) => {
+				a = a.model;
+				b = b.model;
+				if (a.main && a.main == b.main) {
+					return a.name.localeCompare(b.name)
+				}
+
+				if (a.name == b.main) return -1;
+				if (b.name == a.main) return 1;
+
+				let Aname = a.name;
+				let Bname = b.name;
+				if (a.main) Aname = a.main;
+				if (b.main) Bname = b.main;
+				return Aname.localeCompare(Bname);
+			});
+		}
+
+		for (let row of table._add) {
+			table._body.appendChild(row.rowDOM);
+		}
+
+		table._add = [];
+		
+
+		if (!table._body.children.length) {
+			table.parentNode.removeChild(table);
+			delete globalData.tables[it];
+		}
+	}
+
+
+	// sort order of tables
+	let tmp2 = document.createDocumentFragment();
+	for (let it in globalData.tables) {
+		let table = globalData.tables[it];
+		tmp2.appendChild(table); //table.parentNode.removeChild(table);
+	}
+	// add main
+	if (globalData.tables['all']) globalData.fleetTablesDOM.appendChild(globalData.tables['all']);
+	// add squads
+	for (let it of Object.keys(globalData.tables).sort()) {
+		if (['all', 'alts'].includes(it)) continue;
+		let table = globalData.tables[it];
+		globalData.fleetTablesDOM.appendChild(table);
+	}
+	// add alts
+	if (globalData.tables['alts']) globalData.fleetTablesDOM.appendChild(globalData.tables['alts']);
+}
+
 function removeRow_inactive(pilotData) {
-	globalData.fleetBody.removeChild(pilotData.rowDOM);
+	let parent = pilotData.rowDOM.parentNode;
+	if(parent)
+		parent.removeChild(pilotData.rowDOM);
+	//globalData.fleetBody.removeChild(pilotData.rowDOM);
 }
 
 function updateRow_inactive(pilotData) {
@@ -754,6 +940,10 @@ function updateRow_inactive(pilotData) {
 }
 
 function updateRow(pilotData) {
+	if (!pilotData.cellsDOM) {
+		addRow(pilotData);
+	}
+
 	let cells = pilotData.cellsDOM;
 	let model = pilotData.model;
 

@@ -17,7 +17,7 @@ body {
 }
 
 section {
-  padding: 0 15px;
+  padding: 0 5px;
 }
 
 a {
@@ -93,7 +93,8 @@ input {
 }
 
 .no-padding-top {
-  padding-top: 0 !important;
+	/*padding-top: 0 !important;*/
+	padding-top: 15px !important;
 }
 
 .no-padding-bottom {
@@ -169,7 +170,7 @@ input {
   padding: 20px 15px;
   background: #2d3035;
   color: #8a8d93;
-  margin-bottom: 30px;
+  margin-bottom: 15px;
 }
 
 .dropdown-menu {
@@ -912,7 +913,7 @@ nav#sidebar.shrinked a[aria-expanded="true"]::after {
 */
 /* Statistic Block */
 .statistic-block {
-  padding: 20px;
+  padding: 15px 20px;
   background: #2d3035;
   color: #8a8d93;
 }

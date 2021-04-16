@@ -1,20 +1,24 @@
 
-.fleetTable{
+
+.fleetTable {
 	display: table;
 	width: 1200px;
 }
 
-.fleetCaption {
-	font-weight: bold;
+
+.fleetHeadCaption {
 	display: table-caption;
-	background-color: #e9e9e9;
-	text-align: center;
-	padding: 5px;
+	font-weight: bold;
+	background-color: #3f4349;
+	/*background-color: #e9e9e9;*/
+	/*text-align: center;*/
+	padding: 3px 5px 0px 3px;
+	margin: 25px 0px 0px 2px;
 	line-height: 20px;
 	font-size: 18px;
 	color: #CA8327;
+	cursor: pointer;
 }
-
 .fleetColGroup {
 	display: table-column-group;
 }
@@ -27,9 +31,11 @@
 }
 .fleetHeader {
 	display: table-cell;
-	text-align: center;
 	vertical-align: bottom;
 	color: #a1a4aa;
+	padding-left: 15px;
+	font-style: italic;
+	font-size: 0.9rem;
 }
 
 .fleetBody {
@@ -51,10 +57,15 @@
 	font-size: 14px;
 }
 
-.refreshSquads{
+.refreshSquads {
 	margin-left: 25px;
-	color: #b68888;
+	color: #b09696;
+	border: 1px solid #968080;
+	border-radius: 3px;
 	display: inline-block !important;
+	padding: 0px 4px;
+	background-color: #242121;
+	font-size: 0.9rem;
 }
 
 .greenLabel {
@@ -80,7 +91,7 @@
 .fleetRow > div {
 	display: table-cell;
 	white-space: nowrap;
-	padding: 4px 15px;
+	padding: 2px 15px;
 	color: white;
 }
 
@@ -118,22 +129,26 @@
 
 .textButton {
 	cursor: pointer;
+	display: inline-block;
 }
 
 .altName {
 	display: inline-block;
-	color: #e5f2f1;
-	background-color: #6c8b87;
-	padding: 2px 8px;
+	color: #c5f7f1;
+	background-color: #5b5b5b;
+	/*font-style: italic;*/
+	/*padding: 0px 8px 0 5px;*/
+	padding: 0px 6px;
+	font-size: 0.9rem;
 	/*margin-left: 20px;*/
 }
 
 .altNameImg {
 	display: inline-block;
-	width: 13px;
-	height: 18px;
+	width: 9px;
+	height: 14px;
 	background-image: url(../img/arr_up.png);
-	margin-left: 7px;
+	margin-left: 12px;
 	margin-right: 3px;
 }
 
@@ -203,4 +218,32 @@
 	padding: 0px 4px;
 	display: inline-block;
 	font-size: 11px;
+}
+
+.configDiv {
+	background-color: #35322d;
+	padding: 8px 0;
+	color: #a7aab0;
+}
+
+.tabBtn {
+	border: 1px solid;
+	border-radius: 2px;
+	border-color: #815a3d;
+	background-color: #65452c;
+	padding: 0px 8px;
+	display: inline-block;
+	color: #babcbf;
+}
+
+.tableTabs {
+	margin: 2px 50px 2px 0;
+	user-select: none;
+}
+
+.tableTabs .textButton {
+	padding: 0px 3px;
+	margin: 0px 4px;
+	color: #dbdcdd;
+	background-color: #3d4148;
 }

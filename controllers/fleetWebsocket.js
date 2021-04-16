@@ -106,8 +106,6 @@ module.exports = function (http, port) {
 				users.findByName(params.currentBoss, function (bossPilot) {
 					if (!bossPilot) return;
 
-					log.debug('found ' + bossPilot.name);
-
 					fleets.updateCommander(''+fleetId, bossPilot, function (result) {
 						if (result == 200) {
 							gFleetsData[fleetId].fleet.fc = bossPilot;
@@ -292,7 +290,7 @@ function checkFleetToken(fleetId, callback, onError) {
 	}
 
 	function getAccessToken() {
-		console.log('>> getRefreshToken ' + gFleetsData[fleetId].fleet.fc.characterID);
+		//console.log('>> getRefreshToken ' + gFleetsData[fleetId].fleet.fc.characterID);
 		user.getRefreshToken(gFleetsData[fleetId].fleet.fc.characterID, onUserToken);
 	}
 
