@@ -541,7 +541,7 @@ let colsStruct = [
 	{ name: 'name',			label: 'Pilot', width: 200},
 	{ name: 'squad',		label: 'Squad', width: 120},
 	{ name: 'squadBtn',		label: '', width: 40},
-	{ name: 'ship',			label: 'Ship', width: 200},
+	{ name: 'ship',			label: 'Ship', width: 170},
 	{ name: 'system',		label: 'System', width: 70 },
 
 	{ name: 'shipsSub',		label: 'Will fly', width: 100, disabled: 1 },
@@ -1093,9 +1093,10 @@ let shipToColorMap = {
 	'Bestower': '#33c25f',
 	'Drake': '#33c25f',
 	'Phantasm': '#33c25f',
+	'Drekavac': '#33c25f',
 	//
 	'Capsule': '#e9e9e9',
 }
 function shipToColor(name) {
-	return shipToColorMap[name];
+	return shipToColorMap[name] || '';
 }
