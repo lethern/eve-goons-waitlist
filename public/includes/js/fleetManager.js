@@ -70,28 +70,16 @@
 	};
 }
 
-
+const IS_TEST = 0;
 
 /*
 // todo:
 // * when error occurs and someone clicks the "Retry", the connection
 //  resumes, but the error hides only for the person who clicked, not the rest
-// * after 5min, reset error count
- -------------------------------
- ---------(show/hide bar)-------
- | Fleet Boss:  Bobman   [change Boss]
- |   [refresh squads]
- | Squad 1    Active Squad: [select]   Waitlist Squad: [select]     [remove squad]
- | Squad 2
- | [add squad]
- --------------------------------
-// * the active squad/waitlist squad is per squad, which means
-//  the arrows will change when we "assign ourself" to different squad (e.g by changing filter or button, like "My active squad")
 // * need to support errors better - right now just the "move player" - might result in an error, so we should add
 //  a timer to un-stuck it, so FC can click it again (the "moving...")
 //  (easy to test - open website, close server, click "move", start server)
  */
-
 
 // docs
 {
@@ -180,8 +168,6 @@ function onServerError(error) {
 	}
 };
 
-const IS_TEST = 0;
-
 $(document).ready(() => {
 	gMain = document.getElementById('main');
 
@@ -227,13 +213,13 @@ function setupFleetConfig() {
 	//
 
 	let line2 = line1; //createDiv(gConfigDiv);
-	let boss_label = createLabel(line2, 'Fleet Boss: ');
+	let boss_label = createLabel(line2, 'Boss: ');
 	boss_label.style['margin-left'] = '100px';
 	let activeBoss = globalData.currentBoss;
 	gFleetBossDropmenu = createDropDownMenu(line2, activeBoss, selectCurrentBoss, pilotsList, { btnCss: 'squadBtns' });
 
 	//
-	let boss2_label = createLabel(line2, "(can't find? type here)")
+	let boss2_label = createLabel(line2, "(can't find boss? type here)")
 	boss2_label.style['margin-left'] = '40px';
 	boss2_label.style['fontSize'] = '13px';
 	let boss2_input = document.createElement('input');
@@ -830,9 +816,9 @@ function onHeadColumnClick(event) {
 	let sortFunc;
 	switch (sortName) {
 		case 'Pilot': sortFunc = (a, b) => a.model.name.localeCompare(b.model.name); break;
-		case 'Squad': sortFunc = (a, b) => a.model.squad.localeCompare(b.model.name); break;
-		case 'Ship': sortFunc = (a, b) => a.model.ship.localeCompare(b.model.ship); break;
-		case 'System': sortFunc = (a, b) => a.model.system.localeCompare(b.model.system); break;
+		case 'Squad': sortFunc = (a, b) => (a.model.squad+'').localeCompare(b.model.name+''); break;
+		case 'Ship': sortFunc = (a, b) => (a.model.ship+'').localeCompare(b.model.ship+''); break;
+		case 'System': sortFunc = (a, b) => (a.model.system+'').localeCompare(b.model.system+''); break;
 		case 'Time total': sortFunc = (a, b) => {
 			//return a.model.timeTotal.localeCompare(b.model.timeTotal);
 
@@ -1081,7 +1067,7 @@ let shipToColorMap = {
 	'Ishtar': '#c23333',
 	'Rattlesnake': '#c23333',
 	// Logi
-	'Basilisk': '#3358c2',
+	'Basilisk': '#4a6fda',
 	// DDD
 	'Gnosis': '#c28233',
 	'Rapier': '#c28233',
@@ -1097,6 +1083,7 @@ let shipToColorMap = {
 	//
 	'Capsule': '#e9e9e9',
 }
+
 function shipToColor(name) {
 	return shipToColorMap[name] || '';
 }
