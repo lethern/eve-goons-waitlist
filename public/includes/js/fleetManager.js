@@ -180,7 +180,7 @@ function onServerError(error) {
 	}
 };
 
-const IS_TEST = 0;
+const IS_TEST = 1;
 
 $(document).ready(() => {
 	gMain = document.getElementById('main');
@@ -539,9 +539,9 @@ function updateServerStatus(text, css) {
 
 let colsStruct = [
 	{ name: 'name',			label: 'Pilot', width: 200},
-	{ name: 'squad',		label: 'Squad', width: 150},
+	{ name: 'squad',		label: 'Squad', width: 120},
 	{ name: 'squadBtn',		label: '', width: 40},
-	{ name: 'ship',			label: 'Ship', width: 150},
+	{ name: 'ship',			label: 'Ship', width: 200},
 	{ name: 'system',		label: 'System', width: 70 },
 
 	{ name: 'shipsSub',		label: 'Will fly', width: 100, disabled: 1 },
@@ -747,6 +747,8 @@ function addRow(pilotData) {
 			break;
 			case 'ship':
 				cells['ship'] = addCell(row, '');
+				cells['ship_icon'] = createDiv(cells['ship'], '', 'ship_icon');
+				cells['ship_name'] = createDiv(cells['ship'], '', 'ship_name');
 			break;
 			case 'system':
 				cells['system'] = addCell(row, '');
@@ -1046,7 +1048,8 @@ function updateRow(pilotData) {
 			case 'squadBtn':
 			break;
 			case 'ship':
-				cells['ship'].textContent = model.ship;
+				cells['ship_icon'].style['background-color'] = shipToColor(model.ship);
+				cells['ship_name'].textContent = model.ship;
 			break;
 			case 'system':
 				cells['system'].textContent = model.system;
@@ -1070,3 +1073,29 @@ function updateRow(pilotData) {
 	}
 	
 };
+
+let shipToColorMap = {
+	// DPS
+	'Gila': '#c23333',
+	'Praxis': '#c23333',
+	'Ishtar': '#c23333',
+	'Rattlesnake': '#c23333',
+	// Logi
+	'Basilisk': '#3358c2',
+	// DDD
+	'Gnosis': '#c28233',
+	'Rapier': '#c28233',
+	'Huginn': '#c28233',
+	'Tengu': '#c28233',
+	'Nighthawk': '#c28233',
+	// ?
+	'Catalyst': '#33c25f',
+	'Bestower': '#33c25f',
+	'Drake': '#33c25f',
+	'Phantasm': '#33c25f',
+	//
+	'Capsule': '#e9e9e9',
+}
+function shipToColor(name) {
+	return shipToColorMap[name];
+}
