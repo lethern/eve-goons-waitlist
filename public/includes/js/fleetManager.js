@@ -540,16 +540,16 @@ function updateServerStatus(text, css) {
 let colsStruct = [
 	{ name: 'name',			label: 'Pilot', width: 200},
 	{ name: 'squad',		label: 'Squad', width: 150},
-	{ name: 'squadBtn',		label: '', width: 50},
-	{ name: 'ship',			label: 'Ship', width: 100},
-	{ name: 'system',		label: 'System', width: 80 },
+	{ name: 'squadBtn',		label: '', width: 40},
+	{ name: 'ship',			label: 'Ship', width: 150},
+	{ name: 'system',		label: 'System', width: 70 },
 
 	{ name: 'shipsSub',		label: 'Will fly', width: 100, disabled: 1 },
 	{ name: 'shipsAll',		label: 'Can fly', width: 100, disabled: 1 },
 	{ name: 'timeActive',	label: 'Time Active', width: 60, disabled: 1 },
 	{ name: 'timeWaitlist', label: 'Time Waitlist', width: 60, disabled: 1 },
 
-	{ name: 'timeTotal',	label: 'Time total', width: 60},
+	{ name: 'timeTotal',	label: 'Time total', width: 50},
 ];
 
 function setupTableTabs() {
