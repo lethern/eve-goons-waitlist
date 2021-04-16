@@ -36,7 +36,7 @@
 		},{
 			name: 'Bob bobman',
 			main: null,
-			squad: 'Waitlist',
+			squad: 'Alts',
 			shipsSub: ['gila', 'praxi'],
 			shipsAll: [],
 			timeActive: '70',
@@ -47,7 +47,7 @@
 		},{
 			name: 'Alice bobman',
 			main: 'Bob bobman',
-			squad: 'Waitlist',
+			squad: 'AFK',
 			shipsSub: ['gila', 'praxi'],
 			shipsAll: [],
 			timeActive: '0',
@@ -180,7 +180,7 @@ function onServerError(error) {
 	}
 };
 
-const IS_TEST = false;
+const IS_TEST = 0;
 
 $(document).ready(() => {
 	gMain = document.getElementById('main');
@@ -910,7 +910,11 @@ function rerenderTable() {
 	// add main
 	if (globalData.tables['all']) globalData.fleetTablesDOM.appendChild(globalData.tables['all']);
 	// add squads
-	for (let it of Object.keys(globalData.tables).sort()) {
+	let its1 = Object.keys(globalData.tables).filter(n => n.toLowerCase().startsWith('squad'))
+	let its2 = Object.keys(globalData.tables).filter(n => !n.toLowerCase().startsWith('squad'))
+	let its = its1.sort().concat(its2.sort());
+	
+	for (let it of its) {
 		if (['all', 'alts'].includes(it)) continue;
 		let table = globalData.tables[it];
 		globalData.fleetTablesDOM.appendChild(table);
