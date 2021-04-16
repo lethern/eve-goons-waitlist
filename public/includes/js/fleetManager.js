@@ -228,7 +228,7 @@ function setupFleetConfig() {
 
 	let line2 = line1; //createDiv(gConfigDiv);
 	let boss_label = createLabel(line2, 'Fleet Boss: ');
-	boss_label.style['margin-left'] = '200px';
+	boss_label.style['margin-left'] = '100px';
 	let activeBoss = globalData.currentBoss;
 	gFleetBossDropmenu = createDropDownMenu(line2, activeBoss, selectCurrentBoss, pilotsList, { btnCss: 'squadBtns' });
 
@@ -933,6 +933,9 @@ function rerenderTable() {
 			table._body.appendChild(row.rowDOM);
 		}
 
+		//obj.inactive
+		table._caption.textContent = it + '  [' + table._add.reduce((sum, elem) => sum + (elem.inactive? 0:1), 0)+ ']';
+
 		table._add = [];
 		
 
@@ -941,7 +944,7 @@ function rerenderTable() {
 			delete globalData.tables[it];
 		}
 
-		table._caption.textContent = it + '  [' + table._body.children.length+']';
+		
 	}
 
 
