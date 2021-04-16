@@ -103,6 +103,7 @@ module.exports = function (http, port) {
 				gFleetsData[fleetId].currentBoss = params.currentBoss;
 
 				users.findByName(params.currentBoss, function (bossPilot) {
+					if (!bossPilot) return;
 					fleets.updateCommander(fleetId, bossPilot, function (result) {
 						if (result == 200) {
 							gFleetsData[fleetId].fleet.fc = bossPilot;
@@ -287,7 +288,7 @@ function checkFleetToken(fleetId, callback, onError) {
 	}
 
 	function getAccessToken() {
-//		console.log('>> getRefreshToken');
+		console.log('>> getRefreshToken ' + gFleetsData[fleetId].fleet.fc.characterID);
 		user.getRefreshToken(gFleetsData[fleetId].fleet.fc.characterID, onUserToken);
 	}
 
@@ -298,9 +299,6 @@ function checkFleetToken(fleetId, callback, onError) {
 		}
 
 		gFleetsData[fleetId].accessToken = foundAccessToken;
-		// db save
-		// db save
-		// db save
 		// db save
 		callback();
 	}
@@ -359,8 +357,8 @@ function refreshFleet(fleetId) {
 	function onFleetData(error, fleetData) {
 		if (error) {
 			log.error('getFleetMembers', error);
-			onError('ESI fleet error');
 
+			let extraErrorInfo = '';
 			if (error.status == 403 && error.response && error.response.text) {
 				if (((error.response.text.includes && error.response.text.includes('sso_status')) || error.response.text["sso_status"] == 401)
 					|| ((error.response.text.includes && error.response.text.includes('token is expired')) || error.response.text["error"] == 'token is expired')
@@ -368,9 +366,12 @@ function refreshFleet(fleetId) {
 					log.info('resseting token');
 					gFleetsData[fleetId].accessToken = null;
 				} else {
+					extraErrorInfo = error.response.text;
 					log.info('? ' + error.response.text);
 				}
 			}
+
+			onError('ESI fleet error ' + extraErrorInfo);
 			return;
 		}
 
@@ -496,8 +497,15 @@ function refreshFleet(fleetId) {
 		//gFleetsData[fleetId].socket.emit('fleet_data', { pilots });
 	}
 
+
 	function onError(msg) {
+		const ErrorTimeToClean = 5 * 60 * 1000;
+
+		if (gFleetsData[fleetId].lastErrorDate && (new Date() - gFleetsData[fleetId].lastErrorDate) > ErrorTimeToClean)
+			gFleetsData[fleetId] = 0;
+
 		gFleetsData[fleetId].errorsCount++;
+		gFleetsData[fleetId].lastErrorDate = new Date();
 
 		if (gFleetsData[fleetId].errorsCount >= 5) {
 			log.error('max error (5) for fleetId=' + fleetId, msg);
