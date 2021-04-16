@@ -37,6 +37,8 @@
 	padding-left: 15px;
 	font-style: italic;
 	font-size: 0.9rem;
+	user-select: none;
+	cursor: n-resize;
 }
 
 .fleetBody {
