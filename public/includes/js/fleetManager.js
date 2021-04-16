@@ -630,7 +630,6 @@ function showBtnMenu(event) {
 	//$(btnDiv.dropmenuDOM).dropdown();
 }
 
-
 function addDropDownButton(parent, text, callback, cssClss) {
 	let cell = document.createElement('a');
 	cell.classList.add('dropdown-item');
@@ -641,7 +640,6 @@ function addDropDownButton(parent, text, callback, cssClss) {
 	if (callback) cell.addEventListener('click', callback);
 	return cell;
 }
-
 
 function createDropDownMenu(parent, text, onClick, options, config) {
 	if (!config) config = {};
@@ -664,7 +662,6 @@ function createDropDownMenu(parent, text, onClick, options, config) {
 	return dropmenu;
 }
 
-
 function updateDropDownMenu(dropmenu, options, onClick) {
 	let menu = dropmenu._menu;
 	menu.innerHTML = '';
@@ -673,7 +670,6 @@ function updateDropDownMenu(dropmenu, options, onClick) {
 		addDropDownButton(menu, op, onClick);
 	}
 }
-
 
 function setupPilotBtns(pilotData) {
 	let btnsDiv = pilotData.cellsDOM['squadBtn'];
@@ -788,6 +784,7 @@ function getOrCreateTable(name) {
 
 		let caption = createDiv(fleetTable, name, 'fleetHeadCaption');
 		caption.addEventListener('click', onHeadCaptionClick);
+		fleetTable._caption = caption;
 
 		let colgroup = createDiv(fleetTable, '', 'fleetColGroup');
 
@@ -801,6 +798,7 @@ function getOrCreateTable(name) {
 			colDiv.style.width = col.width + 'px';
 
 			let th = createDiv(ths, col.label, 'fleetHeader');
+			th.addEventListener('click', onHeadColumnClick);
 		}
 
 		fleetTable._body = createDiv(fleetTable, '', 'fleetBody');
@@ -820,6 +818,39 @@ function onHeadCaptionClick(event) {
 		table._ths.style.display = 'none';
 	}
 	table._collapsed = !table._collapsed;
+}
+
+function onHeadColumnClick(event) {
+	let caption = event.target;
+	let table = caption.parentNode.parentNode;
+	let sortName = caption.textContent;
+
+	let sortFunc;
+	switch (sortName) {
+		case 'Pilot': sortFunc = (a, b) => a.model.name.localeCompare(b.model.name); break;
+		case 'Squad': sortFunc = (a, b) => a.model.squad.localeCompare(b.model.name); break;
+		case 'Ship': sortFunc = (a, b) => a.model.ship.localeCompare(b.model.ship); break;
+		case 'System': sortFunc = (a, b) => a.model.system.localeCompare(b.model.system); break;
+		case 'Time total': sortFunc = (a, b) => {
+			//return a.model.timeTotal.localeCompare(b.model.timeTotal);
+
+			let aT = +a.model.timeTotal;
+			let bT = +b.model.timeTotal;
+			if (aT == bT) return 0;
+			return aT < bT ? 1 : -1;
+		}; break;
+	}
+	if (sortFunc) {
+		table._sort = sortFunc;
+		if (table._sortName == sortName)
+			table._sortReverse = !table._sortReverse;
+		else
+			table._sortReverse = false;
+		table._sortName = sortName;
+		rerenderTable();
+	} else {
+		console.log('no sortFunc for ' + sortName);
+	}
 }
 
 function movePilotToTable(pilotData) {
@@ -885,6 +916,17 @@ function rerenderTable() {
 				if (b.main) Bname = b.main;
 				return Aname.localeCompare(Bname);
 			});
+		} else if (table._sort) {
+			if (table._sortReverse) {
+				table._add.sort((a, b) => {
+					let res = table._sort(a, b);
+					if (res > 0) return -1;
+					if (res < 0) return 1;
+					return res;
+				});
+			} else {
+				table._add.sort(table._sort);
+			}
 		}
 
 		for (let row of table._add) {
@@ -898,6 +940,8 @@ function rerenderTable() {
 			table.parentNode.removeChild(table);
 			delete globalData.tables[it];
 		}
+
+		table._caption.textContent = it + '  [' + table._body.children.length+']';
 	}
 
 
@@ -909,6 +953,12 @@ function rerenderTable() {
 	}
 	// add main
 	if (globalData.tables['all']) globalData.fleetTablesDOM.appendChild(globalData.tables['all']);
+	// waitlist? first
+	let waitlist = globalData.waitlistSquad;
+	if (waitlist) {
+		if (globalData.tables[waitlist]) globalData.fleetTablesDOM.appendChild(globalData.tables[waitlist]);
+		else waitlist = null;
+	}
 	// add squads
 	let its1 = Object.keys(globalData.tables).filter(n => n.toLowerCase().startsWith('squad'))
 	let its2 = Object.keys(globalData.tables).filter(n => !n.toLowerCase().startsWith('squad'))
@@ -916,6 +966,7 @@ function rerenderTable() {
 	
 	for (let it of its) {
 		if (['all', 'alts'].includes(it)) continue;
+		if (waitlist == it) continue;
 		let table = globalData.tables[it];
 		globalData.fleetTablesDOM.appendChild(table);
 	}
