@@ -123,6 +123,8 @@ module.exports = function (setup) {
             "name": fc.name
         }
 
+		log.debug("fleets.updateCommander: " + fleetID + " to " + fc.name);
+
         db.updateOne({id: fleetID}, {$set: {fc: newFC }}, function(err){
             if(err){
                 log.error("fleets.updateCommander: ", {"FC": fc.name, err});

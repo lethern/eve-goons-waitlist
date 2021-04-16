@@ -102,9 +102,13 @@ module.exports = function (http, port) {
 			if (params.currentBoss) {
 				gFleetsData[fleetId].currentBoss = params.currentBoss;
 
+
 				users.findByName(params.currentBoss, function (bossPilot) {
 					if (!bossPilot) return;
-					fleets.updateCommander(fleetId, bossPilot, function (result) {
+
+					log.debug('found ' + bossPilot.name);
+
+					fleets.updateCommander(''+fleetId, bossPilot, function (result) {
 						if (result == 200) {
 							gFleetsData[fleetId].fleet.fc = bossPilot;
 							gFleetsData[fleetId].accessToken = null;
@@ -369,6 +373,10 @@ function refreshFleet(fleetId) {
 					extraErrorInfo = error.response.text;
 					log.info('? ' + error.response.text);
 				}
+			}
+
+			if (error.response && error.response.text) {
+				extraErrorInfo = error.response.text;
 			}
 
 			onError('ESI fleet error ' + extraErrorInfo);
