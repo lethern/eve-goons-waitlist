@@ -433,7 +433,7 @@ function refreshFleet(fleetId) {
 				let solarName = gIDNames[solarSystemId] || solarSystemId;
 
 				let shipId = row.shipTypeId;
-				let shipName = gIDNames[shipId] || shipId;
+				let shipName = gIDNames[shipId] || (shipId+'');
 				if (shipName.startsWith('Capsule')) shipName = 'Capsule'; // cut the long Capsule - Genolution 'Auroral' 197-variant
 
 				let inFleet_mins = (new Date() - row.joinTime) / 60000;
