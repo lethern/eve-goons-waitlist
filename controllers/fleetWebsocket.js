@@ -30,7 +30,6 @@ errorMsg
 errorsCount
 lastErrorDate
 
-currentBoss
 fc
 accessToken
 squads
@@ -196,7 +195,7 @@ function fetchDBFleet(fleetId, callback) {
 	newFleets.get(fleetId, (fleet) => {
 		if (!fleet) {
 			gFleetsData[fleetId] = {
-				hasError: error,
+				hasError: true,
 				errorMsg: 'Fleet not found in database'
 			};
 			callback();
@@ -582,7 +581,7 @@ function refreshFleetWings(fleetId, callback) {
 				squads
 			});
 
-		let currentBoss = gFleetsData[fleetId].currentBoss;
+		let currentBoss = gFleetsData[fleetId].fc.name;
 		if (callback) callback({ squads, currentBoss });
 	}
 
