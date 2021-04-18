@@ -1,7 +1,7 @@
 const setup = require('../setup.js');
 const user = require('../models/user.js')(setup);
 const users = require('../models/users.js')(setup);
-const fleets = require('../models/fleets.js')(setup);
+const newFleets = require('../models/newFleets.js')(setup);
 const log = require('../logger.js')(module);
 const raw_io = require('socket.io');
 const ESI2 = require('eve_swagger_interface');
@@ -21,6 +21,21 @@ function diffArray(arr1, arr2) {
 	let b = new Set(arr2);
 	return [... new Set([...a].filter(x => !b.has(x)))];
 }
+
+
+/*
+ * fleet:
+hasError
+errorMsg
+errorsCount
+lastErrorDate
+
+currentBoss
+fc
+accessToken
+squads
+toLoadSquads
+ */
 
 let io;
 
@@ -58,13 +73,15 @@ module.exports = function (http, port) {
 			//socket.broadcast.emit('ACK', fleetId);
 
 			if (!gFleetsData[fleetId]) {
-				gFleetsData[fleetId] = initNewFleetsData();
-				
+				fetchDBFleet(fleetId, _continue);
+			} else {
+				_continue();
 			}
-			//gFleetsData[fleetId].socket = socket;
 
-			if (gFleetsData[fleetId].hasError) {
-				socket.emit('fleet_data', { error: gFleetsData[fleetId].errorMsg });
+			function _continue() {
+				if (gFleetsData[fleetId].hasError) {
+					socket.emit('fleet_data', { error: gFleetsData[fleetId].errorMsg });
+				}
 			}
 		});
 
@@ -85,9 +102,12 @@ module.exports = function (http, port) {
 			if (!fleetId) return;
 
 			if (!gFleetsData[fleetId]) return;
-			gFleetsData[fleetId].hasError = false;
-			gFleetsData[fleetId].errorsCount = 0;
-			gFleetsData[fleetId].errorMsg = null;
+
+			newFleets.updateFleet(fleetId, gFleetsData[fleetId], {
+				hasError: false,
+				errorsCount: 0,
+				errorMsg: null
+			});
 			
 			console.log('resetError for ' + fleetId);
 		});
@@ -96,51 +116,37 @@ module.exports = function (http, port) {
 			let fleetId = params.fleetId;
 			if (!fleetId) return;
 
-			let fleet = gFleetsData[fleetId];
-			if (!fleet) return;
+			if (!gFleetsData[fleetId]) return;
 
 			if (params.currentBoss) {
-				gFleetsData[fleetId].currentBoss = params.currentBoss;
-
 
 				users.findByName(params.currentBoss, function (bossPilot) {
 					if (!bossPilot) return;
 
-					fleets.updateCommander(''+fleetId, bossPilot, function (result) {
-						if (result == 200) {
-							gFleetsData[fleetId].fleet.fc = bossPilot;
-							gFleetsData[fleetId].accessToken = null;
-							log.debug('Changed boss for fleet ' + fleetId + ' to ' + params.currentBoss);
-							io.to('fleet' + fleetId).emit('squads_list', { currentBoss: params.currentBoss });
-						}
-					})
-				});
+					newFleets.updateFleet(fleetId, gFleetsData[fleetId], {
+						currentBoss: params.currentBoss,
+						fc: {
+							characterID: bossPilot.characterID,
+							name: bossPilot.name
+						},
+						accessToken: null
+					}, (err) => {
+							if (!err) {
+								log.debug('Changed boss for fleet ' + fleetId + ' to ' + params.currentBoss);
+								io.to('fleet' + fleetId).emit('squads_list', { currentBoss: params.currentBoss });
+							}
+					});
 
-				//socket.emit('squads_list', { currentSquadId: params.currentSquadId });
-				// squads, currentBoss
+				});
 			}
 
-//			if (params.currentSquadId) {
-//				gFleetsData[fleetId].currentSquadId = params.currentSquadId;
-//
-//				//socket.emit('squads_list', { currentSquadId: params.currentSquadId });
-//				io.to('fleet' + fleetId).emit('squads_list', { currentSquadId: params.currentSquadId });
-//			}
-
-//			if (params.waitlistSquadId) {
-//				gFleetsData[fleetId].waitlistSquadId = params.waitlistSquadId;
-//
-//				//socket.emit('squads_list', { waitlistSquadId: params.waitlistSquadId });
-//				io.to('fleet' + fleetId).emit('squads_list', { waitlistSquadId: params.waitlistSquadId });
-//			}
 		});
 
 		socket.on('moveMember', (params) => {
 			let fleetId = params.fleetId;
 			if (!fleetId) return;
 
-			let fleet = gFleetsData[fleetId];
-			if (!fleet) return;
+			if (!gFleetsData[fleetId]) return;
 
 			let squadId = params.squadId;
 			let pilotId = params.pilotId;
@@ -167,25 +173,29 @@ module.exports = function (http, port) {
 
 	});
 
-	log.info('Websocket set');
-
 	const refresh_time = 6 * 1000;
 	setInterval(refreshFleets, refresh_time);
-	log.info('refreshFleets started at ' + refresh_time);
+	log.info('Websocket set, refreshFleets started at ' + refresh_time);
 };
+
+function fetchDBFleet(fleetId, callback) {
+	newFleets.get(fleetId, (fleet) => {
+		if (!fleet) {
+			return;
+		}
+
+		if (!gFleetsData[fleetId]) {
+			gFleetsData[fleetId] = fleet;
+		}
+		callback();
+	});
+}
 
 function getWingIdFromSquad(fleetId, squadId) {
 	let squad = gFleetsData[fleetId].squads[squadId];
 	if (!squad) return null;
 
 	return squad.wing_id;
-}
-
-function initNewFleetsData() {
-	return {
-		toLoadSquads: false,
-		errorsCount: 0,
-	}
 }
 
 function refreshFleets() {
@@ -197,7 +207,7 @@ function refreshFleets() {
 		let fleet = gFleetsData[fleetId];
 		if (fleet.hasError) continue;
 
-		if (fleet.accessToken && fleet.fleet && !fleet.fleet.fc && fleet.toLoadSquads) {
+		if (fleet.accessToken && !fleet.fc && fleet.toLoadSquads) {
 			fleet.toLoadSquads = false;
 			refreshFleetWings(fleetId);
 		}
@@ -253,13 +263,6 @@ function loadSolarSystems() {
 
 function checkFleetToken(fleetId, callback, onError) {
 	if (!gFleetsData[fleetId].accessToken) {
-		if (!gFleetsData[fleetId].fleet || !gFleetsData[fleetId].fleet.fc) {
-//			console.log('>> fleets.get');
-			fleets.get(fleetId, onFleetDB);
-			return false;
-		}
-		//		console.log('getAccessToken');
-		//getAccessToken();
 		getAccessToken();
 		return false;
 	}
@@ -267,31 +270,8 @@ function checkFleetToken(fleetId, callback, onError) {
 	return true;
 
 
-	function onFleetDB(foundFleet) {
-		if (!foundFleet) {
-			onError("Fleet not found in DB");
-			return;
-		}
-
-		if (foundFleet && !foundFleet.fc.characterID) {
-			onError("Fleet DB data incorrect");
-			return;
-		}
-
-		//		console.log('onFleetDB -> getAccessToken');
-
-		gFleetsData[fleetId].fleet = foundFleet;
-
-		if (gFleetsData[fleetId].fleet.fc) {
-			gFleetsData[fleetId].currentBoss = gFleetsData[fleetId].fleet.fc.name;
-		}
-
-		getAccessToken();
-	}
-
 	function getAccessToken() {
-		//console.log('>> getRefreshToken ' + gFleetsData[fleetId].fleet.fc.characterID);
-		user.getRefreshToken(gFleetsData[fleetId].fleet.fc.characterID, onUserToken);
+		user.getRefreshToken(gFleetsData[fleetId].fc.characterID, onUserToken);
 	}
 
 	function onUserToken(foundAccessToken) {
@@ -300,9 +280,13 @@ function checkFleetToken(fleetId, callback, onError) {
 			return;
 		}
 
-		gFleetsData[fleetId].accessToken = foundAccessToken;
-		// db save
-		callback();
+		newFleets.updateFleet(fleetId, gFleetsData[fleetId], {
+			accessToken: foundAccessToken,
+		}, (err) => {
+			if (!err) {
+				callback();
+			}
+		});
 	}
 }
 
@@ -316,36 +300,10 @@ function refreshFleet(fleetId) {
 
 	function prepareReadFleet() {
 		if (!gFleetsData[fleetId].squads) {
-			var evesso = ESI2_defaultClient.authentications['evesso'];
-			evesso.accessToken = gFleetsData[fleetId].accessToken;
-
-//			console.log('>> prepareReadFleet -> getFleetsFleetIdWings');
-			FleetsApi.getFleetsFleetIdWings(fleetId, {}, onWingsData);
+			refreshFleetWings(fleetId);
 			return;
 		}
 
-//		console.log('prepareReadFleet -> onReadFleet');
-		onReadFleet();
-	}
-
-	function onWingsData(error, data) {
-		if (error) {
-			log.error('getFleetsFleetIdWings', error);
-			onError('ESI fleet wings error');
-			return;
-		}
-
-		let squads = {};
-		gFleetsData[fleetId].squads = squads;
-
-		for (let wing of data) {
-			// wing.id, wing.name, wing.squads
-			for (let squad of wing.squads) {
-				squads[squad.id] = { name: squad.name, wing: wing.name, wing_id: wing.id };
-			}
-		}
-
-//		console.log('onWingsData -> onReadFleet');
 		onReadFleet();
 	}
 
@@ -362,16 +320,33 @@ function refreshFleet(fleetId) {
 
 			let extraErrorInfo = '';
 			if (error.status == 403 && error.response && error.response.text) {
-				if (((error.response.text.includes && error.response.text.includes('sso_status')) || error.response.text["sso_status"] == 401)
-					|| ((error.response.text.includes && error.response.text.includes('token is expired')) || error.response.text["error"] == 'token is expired')
+				if ((error.response.text.includes && error.response.text.includes('sso_status'))
+					|| (error.response.text.includes && error.response.text.includes('token is expired'))
 				) {
-					log.info('resseting token');
+					log.info('reseting token');
 					gFleetsData[fleetId].accessToken = null;
 				} else {
 					extraErrorInfo = error.response.text;
 					log.info('? ' + error.response.text);
 				}
 			}
+
+			if (error.status == 403 && error.response && error.response.text) {
+				if (( error.response.text["sso_status"] == 401)
+					|| (error.response.text["error"] == 'token is expired')
+				) {
+					log.info('reseting token2222');
+					gFleetsData[fleetId].accessToken = null;
+				}
+			}
+
+			if (error.status == 403 && error.response && error.response.text) {
+				if (error.response.text.includes && error.response.text.includes('The fleet does not exist or')) {
+					onKnownError('The fleet does not exist or fleet Boss changed');
+					return;
+				}
+			}
+
 
 			if (error.response && error.response.text) {
 				extraErrorInfo = error.response.text;
@@ -459,6 +434,7 @@ function refreshFleet(fleetId) {
 
 				let shipId = row.shipTypeId;
 				let shipName = gIDNames[shipId] || shipId;
+				if (shipName.startsWith('Capsule')) shipName = 'Capsule'; // cut the long Capsule - Genolution 'Auroral' 197-variant
 
 				let inFleet_mins = (new Date() - row.joinTime) / 60000;
 				
@@ -507,19 +483,40 @@ function refreshFleet(fleetId) {
 	function onError(msg) {
 		const ErrorTimeToClean = 5 * 60 * 1000;
 
+		let errorsCount = gFleetsData[fleetId].errorsCount;
 		if (gFleetsData[fleetId].lastErrorDate && (new Date() - gFleetsData[fleetId].lastErrorDate) > ErrorTimeToClean)
-			gFleetsData[fleetId] = 0;
+			errorsCount = 0;
 
-		gFleetsData[fleetId].errorsCount++;
-		gFleetsData[fleetId].lastErrorDate = new Date();
+		errorsCount++;
+		let lastErrorDate = new Date();
+		let hasError = gFleetsData[fleetId].hasError;
+		let errorMsg = undefined;
 
 		if (gFleetsData[fleetId].errorsCount >= 5) {
 			log.error('max error (5) for fleetId=' + fleetId, msg);
-			gFleetsData[fleetId].hasError = true;
-			gFleetsData[fleetId].errorMsg = msg;
+			hasError = true;
+			errorMsg = msg;
 
 			io.to('fleet' + fleetId).emit('fleet_data', { error: msg });
 		}
+
+		newFleets.updateFleet(fleetId, gFleetsData[fleetId], {
+			errorsCount,
+			lastErrorDate,
+			hasError,
+			errorMsg
+		});
+	}
+
+	function onKnownError(msg) {
+
+		newFleets.updateFleet(fleetId, gFleetsData[fleetId], {
+			errorsCount: 5,
+			hasError: true,
+			errorMsg: msg
+		});
+
+		io.to('fleet' + fleetId).emit('fleet_data', { error: msg });
 	}
 };
 
@@ -561,17 +558,13 @@ function refreshFleetWings(fleetId, callback) {
 			}
 		}
 
-		//currentSquadId: gFleetsData[fleetId].currentSquadId,
-		//waitlistSquadId: gFleetsData[fleetId].waitlistSquadId,
+		newFleets.updateFleet(fleetId, gFleetsData[fleetId], {
+				squads
+			});
 
-
-		//let currentSquadId = gFleetsData[fleetId].currentSquadId;
-		//let waitlistSquadId = gFleetsData[fleetId].waitlistSquadId;
-		//if (callback) callback({ squads, currentSquadId, waitlistSquadId });
 		let currentBoss = gFleetsData[fleetId].currentBoss;
 		if (callback) callback({ squads, currentBoss });
 	}
-
 
 	function onError(error) {
 		log.error('refreshFleetWings: ', error);
