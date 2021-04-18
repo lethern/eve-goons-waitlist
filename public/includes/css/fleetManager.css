@@ -266,3 +266,12 @@ body {
 .ship_name {
 	display: inline-block;
 }
+
+.removeFleetBtn {
+	border: 1px solid;
+	border-radius: 3px;
+	border-color: #854747;
+	background-color: #481717;
+	padding: 0px 4px;
+	display: inline-block;
+}

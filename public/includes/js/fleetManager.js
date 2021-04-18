@@ -240,7 +240,7 @@ function setupFleetConfig() {
 		if (confirm("Do you want to remove fleet from database?")) {
 			socket.emit('removeFleet', { fleetId: SERV_fleetId });
 		}
-	}, 'boss2Btn');
+	}, 'removeFleetBtn');
 }
 
 function getAllPilotNames() {
@@ -1027,7 +1027,7 @@ function updateRow(pilotData) {
 						cells['squad_up'].classList.remove('redSquad');
 						cells['squad_up'].classList.add('greenSquad');
 
-						cells['squad_down'].textContent = globalData.waitlistSquad + ' <-';
+						cells['squad_down'].textContent = (globalData.waitlistSquad ? globalData.waitlistSquad + ' <-' : '');
 						cells['squad_down'].targetSquad = globalData.waitlistSquad;
 						cells['squad_down'].classList.add('blueSquad', 'textButton');
 					} else {
@@ -1035,7 +1035,7 @@ function updateRow(pilotData) {
 						cells['squad_up'].classList.remove('redSquad');
 						cells['squad_up'].classList.add('orangeSquad');
 
-						cells['squad_down'].textContent = '-> ' + globalData.currentSquad;
+						cells['squad_down'].textContent = (globalData.currentSquad ? '-> ' + globalData.currentSquad : '');
 						cells['squad_down'].targetSquad = globalData.currentSquad;
 						cells['squad_down'].classList.add('blueSquad', 'textButton');
 					}

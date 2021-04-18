@@ -67,6 +67,7 @@
 		</li>
 		<li{{  " class=active" if sideBarSelected === 6 }}>
 		<a href="#fctools" aria-expanded="false" data-toggle="collapse" class="collapsed"><i class="fas fa-toolbox"></i> FC Tools <i class="fas fa-sort-down float-right"></i></a>
+		<!--
 		<ul id="fctools" class="collapse list-unstyled ">
 			<li><a href="/commander/tools/fits-scan">Fit Scan Tool</a></li>
 			<li><a href="#" onclick="openSearch()" accesskey="s">Pilot Search</a></li>
@@ -75,6 +76,7 @@
 			<li><a href="/commander/tools/waitlist-logs">Waitlist Log</a></li>
 			<li><a href="/test/contract-check">Contracts</a></li>
 		</ul>
+		-->
 		{% if userProfile.role.numeric >= 4 %}
 		<li{{  " class=active" if sideBarSelected === 7 }}>
 		<a href="#squadmanagement" aria-expanded="false" data-toggle="collapse" class="collapsed"><i class="fas fa-tachometer-alt"></i> Waitlist Admin <i class="fas fa-sort-down float-right"></i></a>

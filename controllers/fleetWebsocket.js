@@ -281,6 +281,7 @@ function loadSolarSystems() {
 */
 
 function checkFleetToken(fleetId, callback, onError) {
+	if (!gFleetsData[fleetId]) return;
 	if (!gFleetsData[fleetId].accessToken) {
 		getAccessToken();
 		return false;
@@ -290,6 +291,7 @@ function checkFleetToken(fleetId, callback, onError) {
 
 
 	function getAccessToken() {
+		if (!gFleetsData[fleetId]) return;
 		user.getRefreshToken(gFleetsData[fleetId].fc.characterID, onUserToken);
 	}
 
@@ -298,6 +300,8 @@ function checkFleetToken(fleetId, callback, onError) {
 			onError('Fleet Boss Auth error (accessToken)');
 			return;
 		}
+
+		if (!gFleetsData[fleetId]) return;
 
 		newFleets.updateFleet(fleetId, gFleetsData[fleetId], {
 			accessToken: foundAccessToken,
@@ -318,6 +322,8 @@ function refreshFleet(fleetId) {
 
 
 	function prepareReadFleet() {
+		if (!gFleetsData[fleetId]) return;
+
 		if (!gFleetsData[fleetId].squads) {
 			refreshFleetWings(fleetId);
 			return;
@@ -327,6 +333,8 @@ function refreshFleet(fleetId) {
 	}
 
 	function onReadFleet() {
+		if (!gFleetsData[fleetId]) return;
+
 		var evesso = ESI2_defaultClient.authentications['evesso'];
 		evesso.accessToken = gFleetsData[fleetId].accessToken;
 
@@ -334,6 +342,8 @@ function refreshFleet(fleetId) {
 	}
 
 	function onFleetData(error, fleetData) {
+		if (!gFleetsData[fleetId]) return;
+
 		if (error) {
 			log.error('getFleetMembers', error);
 
@@ -392,6 +402,8 @@ function refreshFleet(fleetId) {
 	};
 
 	function onDBLoadUsers(DBdata, charIDs, fleetData) {
+		if (!gFleetsData[fleetId]) return;
+
 		if (!DBdata) {
 			onError('onDBLoadUsers error');
 			return;
@@ -432,6 +444,8 @@ function refreshFleet(fleetId) {
 	}
 
 	function prepareFleetData(rows) {
+		if (!gFleetsData[fleetId]) return;
+
 		try {
 			let fleetData = gFleetsData[fleetId];
 			let squads = fleetData.squads;
@@ -502,6 +516,8 @@ function refreshFleet(fleetId) {
 	function onError(msg) {
 		const ErrorTimeToClean = 5 * 60 * 1000;
 
+		if (!gFleetsData[fleetId]) return;
+
 		let errorsCount = gFleetsData[fleetId].errorsCount;
 		if (gFleetsData[fleetId].lastErrorDate && (new Date() - gFleetsData[fleetId].lastErrorDate) > ErrorTimeToClean)
 			errorsCount = 0;
@@ -528,6 +544,7 @@ function refreshFleet(fleetId) {
 	}
 
 	function onKnownError(msg) {
+		if (!gFleetsData[fleetId]) return;
 
 		newFleets.updateFleet(fleetId, gFleetsData[fleetId], {
 			errorsCount: 5,
@@ -551,6 +568,8 @@ function refreshFleetWings(fleetId, callback) {
 	return;
 
 	function getFleetWings() {
+		if (!gFleetsData[fleetId]) return;
+
 		var evesso = ESI2_defaultClient.authentications['evesso'];
 		evesso.accessToken = gFleetsData[fleetId].accessToken;
 
@@ -559,6 +578,8 @@ function refreshFleetWings(fleetId, callback) {
 	};
 
 	function onWingsData(error, data) {
+		if (!gFleetsData[fleetId]) return;
+
 		if (error) {
 			log.error('getFleetsFleetIdWings', error);
 			onError('ESI fleet wings error');
