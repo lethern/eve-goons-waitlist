@@ -158,7 +158,7 @@ function onServerError(error) {
 	gErrorDiv.innerHTML = '';
 	gErrorDiv.style.display = 'block';
 
-	let msg = createDiv(gErrorDiv, 'Server error! ' + error);
+	let msg = createDiv(gErrorDiv, 'Server error! ' + (error ||''));
 	let btn = addButton(gErrorDiv, 'Retry', callback, 'errorBtn');
 
 	function callback() {
@@ -173,6 +173,7 @@ $(document).ready(() => {
 
 	socket.on('fleet_data', onFleetData);
 	socket.on('squads_list', onSquadsList);
+	socket.on('fleet_error', (arg) => onServerError(arg.error));
 
 	if (!IS_TEST) {
 		socket.connect();
@@ -230,6 +231,15 @@ function setupFleetConfig() {
 		let boss = boss2_input.value;
 		boss2_input.value = '';
 		socket.emit('setFleetConfig', { fleetId: SERV_fleetId, currentBoss: boss });
+	}, 'boss2Btn');
+
+
+	//////
+	let line3 = createDiv(gConfigDiv);
+	addButton(line3, 'Remove fleet', function () {
+		if (confirm("Do you want to remove fleet from database?")) {
+			socket.emit('removeFleet', { fleetId: SERV_fleetId });
+		}
 	}, 'boss2Btn');
 }
 

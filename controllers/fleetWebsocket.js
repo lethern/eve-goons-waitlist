@@ -171,6 +171,19 @@ module.exports = function (http, port) {
 			}
 		});
 
+		socket.on('removeFleet', (params) => {
+			let fleetId = params.fleetId;
+			if (!fleetId) return;
+
+			newFleets.close(fleetId, (success) => {
+				if (success) {
+					io.to('fleet' + fleetId).emit('fleet_error', { error: 'Fleet removed by FC from database' });
+				}
+			});
+		});
+
+		
+
 	});
 
 	const refresh_time = 6 * 1000;

@@ -45,18 +45,16 @@ module.exports = function (setup) {
 	}
 
 
-    /*
     module.close = function(fleetID, cb){
-        db.remove({id: fleetID}, function (err) {
+        db.remove({id: ''+fleetID}, function (err) {
 			if (err){
                 log.error("fleet.delete:", { "fleet id: ": fleetID, err });
-                cb(400);
+                cb(false);
                 return;
             } 
-			cb(200);
+			cb(true);
 		})
     }
-    */
 
 
     module.register = function(fleetObject, cb){
