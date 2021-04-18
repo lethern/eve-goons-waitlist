@@ -202,7 +202,7 @@ function fetchDBFleet(fleetId, callback) {
 			return;
 		}
 
-		if (!gFleetsData[fleetId]) {
+		if (!gFleetsData[fleetId] || gFleetsData[fleetId].errorMsg == 'Fleet not found in database') {
 			log.debug("Loaded fleet");
 			gFleetsData[fleetId] = fleet;
 		}
