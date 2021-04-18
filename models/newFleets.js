@@ -9,7 +9,7 @@ const cache = require('../cache.js')(setup);
 module.exports = function (setup) {
 
     module.get = function(fleetID, cb){
-		db.findOne({ 'id': fleetID }, function (err, doc) {
+		db.findOne({ 'id': ''+fleetID }, function (err, doc) {
 			if (err) log.error("newFleets.get: Error for db.findOne", { err, fleetID });
 			if (!doc) {
 				log.error("newFleets.get: not found", { fleetID });
