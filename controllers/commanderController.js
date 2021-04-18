@@ -1,7 +1,7 @@
 const setup = require('../setup.js');
 const newFleets = require('../models/newFleets.js')(setup);
 const users = require('../models/users.js')(setup);
-
+const log = require('../logger.js')(module);
 
 //Render FC Dashboard Page
 exports.index = function(req, res) {
@@ -59,9 +59,9 @@ exports.registerFleet = function(req, res) {
             type: req.body.type,
             status: "Not Listed",
             location: null,
-            members: {},
+            //members: {},
             url: req.body.url,
-            id: fleetID,
+            id: fleetID+'',
             //comms: { 
             //    name: setup.fleet.comms[req.body.comms].name,
             //    url: setup.fleet.comms[req.body.comms].url
@@ -77,6 +77,8 @@ exports.registerFleet = function(req, res) {
 				res.status(409).redirect('/commander');
 				return;
 			}
+
+			log.debug("Registered new fleet " + fleetID);
 
 			req.flash("content", { "class": "info", "title": "Fleet Registered", "message": "Fleet ID: " + fleetID });
 			//res.status(200).redirect('/commander/'+ fleetID);

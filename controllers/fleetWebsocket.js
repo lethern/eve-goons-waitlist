@@ -177,6 +177,7 @@ module.exports = function (http, port) {
 
 			newFleets.close(fleetId, (success) => {
 				if (success) {
+					delete gFleetsData[fleetId];
 					io.to('fleet' + fleetId).emit('fleet_error', { error: 'Fleet removed by FC from database' });
 				}
 			});
@@ -194,10 +195,16 @@ module.exports = function (http, port) {
 function fetchDBFleet(fleetId, callback) {
 	newFleets.get(fleetId, (fleet) => {
 		if (!fleet) {
+			gFleetsData[fleetId] = {
+				hasError: error,
+				errorMsg: 'Fleet not found in database'
+			};
+			callback();
 			return;
 		}
 
 		if (!gFleetsData[fleetId]) {
+			log.debug("Loaded fleet");
 			gFleetsData[fleetId] = fleet;
 		}
 		callback();
