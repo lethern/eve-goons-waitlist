@@ -232,7 +232,7 @@ i[class*='icon-'] {
 }
 
 .dropdown-menu a {
-  padding: 10px 15px !important;
+  padding: 5px 8px !important;
   color: #333;
   font-size: 0.9rem;
   text-transform: none !important;
@@ -922,8 +922,7 @@ nav#sidebar.shrinked a[aria-expanded="true"]::after {
   margin-bottom: 0;
 }
 
-.statistic-block strong,
-.statistic-block span {
+.statistic-block strong {
   display: block;
 }
 
@@ -1632,6 +1631,7 @@ nav#sidebar.shrinked a[aria-expanded="true"]::after {
   border-radius: 0;
   padding: 6px 10px;
   color: #979a9f;
+  margin-bottom: 10px;
 }
 
 .form-control::-moz-placeholder {
@@ -1851,7 +1851,7 @@ input.input-material ~ label.active {
 }
 
 select {
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   padding: 5px 8px !important;
 }
 

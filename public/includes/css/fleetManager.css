@@ -99,7 +99,7 @@ body {
 	display: table-cell;
 	white-space: nowrap;
 	padding: 2px 15px;
-	color: white;
+	color: #f2f2f2;
 }
 
 .rowMain:nth-child(odd) {
@@ -160,8 +160,9 @@ body {
 }
 
 .pilotBtns {
-	margin-top: 5px;
 	width: 20px;
+	max-width: 20px;
+	min-width: 20px !important;
 	height: 20px;
 	border-radius: 10px;
 	background-color: #aaaaaa;
@@ -189,6 +190,13 @@ body {
 }
 .dropdown {
 	display: inline-block;
+	vertical-align: middle;
+	margin-bottom: 1px;
+}
+.dropdown > .textButton {
+	white-space: nowrap;
+	min-height: 19px;
+	min-width: 50px
 }
 .dropdown-menu > .textButton {
 	white-space: nowrap;
@@ -196,10 +204,6 @@ body {
 }
 .dropdown-menu > .textButton:hover {
 	background-color: #9d9d9d;
-}
-
-.mySpan{
-	display: inline-block !important;
 }
 
 .dropdown-item{
@@ -231,6 +235,10 @@ body {
 	background-color: #35322d;
 	padding: 8px 0;
 	color: #a7aab0;
+}
+
+.configDiv > div{
+	vertical-align: middle;
 }
 
 .tabBtn {
@@ -268,11 +276,12 @@ body {
 }
 
 .removeFleetBtn {
-	margin-top: 4px;
+	margin-left: 30px;
 	border: 1px solid;
 	border-radius: 3px;
 	border-color: #854747;
 	background-color: #481717;
 	padding: 0px 4px;
 	display: inline-block;
+	vertical-align: middle;
 }

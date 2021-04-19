@@ -25,15 +25,21 @@ function diffArray(arr1, arr2) {
 
 /*
  * fleet:
-hasError
-errorMsg
-errorsCount
-lastErrorDate
-
 fc
+fleetType
+incursionType
+status
+location
+url
+id
+toLoadSquads
+errorsCount
 accessToken
 squads
-toLoadSquads
+errorMsg
+hasError
+lastErrorDate
+currentBoss
  */
 
 let io;
@@ -41,19 +47,6 @@ let io;
 module.exports = function (http, port) {
 	
 	io = raw_io(http);
-
-//	io.use((socket, next) => {
-//		if (!socket.handshake.auth) {
-//			return next(new Error("invalid auth"));
-//		}
-//
-//		const username = socket.handshake.auth.username;
-//		if (!username) {
-//			return next(new Error("invalid username"));
-//		}
-//		socket.username = username;
-//		next();
-//	});
 
 	io.on('connection', (socket) => {
 		console.log('a user connected');
@@ -80,6 +73,12 @@ module.exports = function (http, port) {
 			function _continue() {
 				if (gFleetsData[fleetId].hasError) {
 					socket.emit('fleet_data', { error: gFleetsData[fleetId].errorMsg });
+				} else {
+					socket.emit('fleet_config', {
+						currentBoss: (gFleetsData[fleetId].fc ? gFleetsData[fleetId].fc.name : ''),
+						fleetType: gFleetsData[fleetId].fleetType,
+						incursionType: gFleetsData[fleetId].incursionType,
+					});
 				}
 			}
 		});
@@ -119,7 +118,7 @@ module.exports = function (http, port) {
 
 			if (params.currentBoss) {
 
-				users.findByName(params.currentBoss, function (bossPilot) {
+				users.findByName_noCase(params.currentBoss, function (bossPilot) {
 					if (!bossPilot) return;
 
 					newFleets.updateFleet(fleetId, gFleetsData[fleetId], {
@@ -129,14 +128,29 @@ module.exports = function (http, port) {
 							name: bossPilot.name
 						},
 						accessToken: null
-					}, (err) => {
-							if (!err) {
-								log.debug('Changed boss for fleet ' + fleetId + ' to ' + params.currentBoss);
-								io.to('fleet' + fleetId).emit('squads_list', { currentBoss: params.currentBoss });
-							}
 					});
 
+					log.debug('Changed boss for fleet ' + fleetId + ' to ' + params.currentBoss);
+					io.to('fleet' + fleetId).emit('fleet_config', { currentBoss: params.currentBoss });
+
 				});
+			}
+
+			let updates = {};
+
+			if (params.fleetType) {
+				updates.fleetType = params.fleetType;
+				if (params.fleetType != "Incursion")
+					updates.incursionType = '';
+			}
+
+			if (params.incursionType) {
+				updates.incursionType = params.incursionType;
+			}
+
+			if (Object.keys(updates).length) {
+				newFleets.updateFleet(fleetId, gFleetsData[fleetId], updates);
+				io.to('fleet' + fleetId).emit('fleet_config', updates);
 			}
 
 		});
@@ -182,8 +196,6 @@ module.exports = function (http, port) {
 			});
 		});
 
-		
-
 	});
 
 	const refresh_time = 6 * 1000;
@@ -218,9 +230,9 @@ function getWingIdFromSquad(fleetId, squadId) {
 }
 
 function refreshFleets() {
-	if (io.engine.clientsCount == 0) {
-		return;
-	}
+//	if (io.engine.clientsCount == 0) {
+//		return;
+//	}
 
 	for (let fleetId in gFleetsData) {
 		let fleet = gFleetsData[fleetId];
@@ -345,43 +357,7 @@ function refreshFleet(fleetId) {
 		if (!gFleetsData[fleetId]) return;
 
 		if (error) {
-			log.error('getFleetMembers', error);
-
-			let extraErrorInfo = '';
-			if (error.status == 403 && error.response && error.response.text) {
-				if ((error.response.text.includes && error.response.text.includes('sso_status'))
-					|| (error.response.text.includes && error.response.text.includes('token is expired'))
-				) {
-					log.info('reseting token');
-					gFleetsData[fleetId].accessToken = null;
-				} else {
-					extraErrorInfo = error.response.text;
-					log.info('? ' + error.response.text);
-				}
-			}
-
-			if (error.status == 403 && error.response && error.response.text) {
-				if (( error.response.text["sso_status"] == 401)
-					|| (error.response.text["error"] == 'token is expired')
-				) {
-					log.info('reseting token2222');
-					gFleetsData[fleetId].accessToken = null;
-				}
-			}
-
-			if (error.status == 404 && error.response && error.response.text) {
-				if (error.response.text.includes && error.response.text.includes('The fleet does not exist or')) {
-					onKnownError('The fleet does not exist or fleet Boss changed');
-					return;
-				}
-			}
-
-
-			if (error.response && error.response.text) {
-				extraErrorInfo = error.response.text;
-			}
-
-			onError('ESI fleet error ' + extraErrorInfo);
+			onFleetDataError(fleetId, error)
 			return;
 		}
 
@@ -400,6 +376,46 @@ function refreshFleet(fleetId) {
 			prepareFleetData(fleetData);
 		}
 	};
+
+	function onFleetDataError(fleetId, error) {
+		log.error('getFleetMembers', error);
+
+		let extraErrorInfo = '';
+		if (error.status == 403 && error.response && error.response.text) {
+			if ((error.response.text.includes && error.response.text.includes('sso_status'))
+				|| (error.response.text.includes && error.response.text.includes('token is expired'))
+			) {
+				log.info('reseting token');
+				gFleetsData[fleetId].accessToken = null;
+			} else {
+				extraErrorInfo = error.response.text;
+				log.info('? ' + error.response.text);
+			}
+		}
+
+		if (error.status == 403 && error.response && error.response.text) {
+			if ((error.response.text["sso_status"] == 401)
+				|| (error.response.text["error"] == 'token is expired')
+			) {
+				log.info('reseting token2222');
+				gFleetsData[fleetId].accessToken = null;
+			}
+		}
+
+		if (error.status == 404 && error.response && error.response.text) {
+			if (error.response.text.includes && error.response.text.includes('The fleet does not exist or')) {
+				onKnownError('The fleet does not exist or fleet Boss changed');
+				return;
+			}
+		}
+
+
+		if (error.response && error.response.text) {
+			extraErrorInfo = error.response.text;
+		}
+
+		onError('ESI fleet error ' + extraErrorInfo);
+	}
 
 	function onDBLoadUsers(DBdata, charIDs, fleetData) {
 		if (!gFleetsData[fleetId]) return;
@@ -435,9 +451,6 @@ function refreshFleet(fleetId) {
 
 	function onESILoadUsers(ESIdata, fleetData) {
 		ESIdata.forEach(r => gUserNamesData[r.id] = r.name);
-		// db save
-		// db save
-		// db save
 
 //		console.log('onESILoadUsers -> prepareFleetData');
 		prepareFleetData(fleetData);
@@ -470,10 +483,11 @@ function refreshFleet(fleetId) {
 				if (shipName.startsWith('Capsule')) shipName = 'Capsule'; // cut the long Capsule - Genolution 'Auroral' 197-variant
 
 				let inFleet_mins = (new Date() - row.joinTime) / 60000;
-				
+				let name = gUserNamesData[row.characterId];
+
 				pilots.push({
 					id: row.characterId,
-					name: gUserNamesData[row.characterId],
+					name: name,
 					main: null,
 					squad: squadName,
 					squadChanging: squadChanging,
@@ -485,6 +499,12 @@ function refreshFleet(fleetId) {
 					ship: shipName,
 					system: solarName,
 				});
+
+				pilotsStats[row.characterId] = {
+					squad: squadName,
+					ship: shipName,
+					system: solarName,
+				};
 
 				if (row.squadId != -1 && squads[row.squadId] === undefined) {
 					fleetData.toLoadSquads = true;
@@ -602,8 +622,7 @@ function refreshFleetWings(fleetId, callback) {
 				squads
 			});
 
-		let currentBoss = gFleetsData[fleetId].fc.name;
-		if (callback) callback({ squads, currentBoss });
+		if (callback) callback({ squads });
 	}
 
 	function onError(error) {
@@ -612,19 +631,3 @@ function refreshFleetWings(fleetId, callback) {
 	};
 }
 
-
-
-/*
- -musimy dodac session id -> moze byc ustawiany wtedy gdy refreshToken 
-   (jesli w danej chwili nie ma session id, to jest ustawiany od razu, tylko trzeba zapisac)
- -WS musi odeslac nam przy connect session id, zebysmy dokonali autoryzacji (user vs session)
- -drugie w kolejnosci, to ta osoba musi albo miec super uprawnienia, albo byc fleet FC / backup FC
-1. zapisywac mape flot, w niej accessToken
-2. jesli jest blad, to nullowac accessToken
- (chyba ze blad invalid token, to trzeba przerwac) (w innym przypadku, sprobowac ponownie)
-3. jesli pusty, to refresh Token
--tworzymy pokoj na id fleet
--kazdy klient dolacza do pokoju i wysyla prosbe o full info
-
- 
- */

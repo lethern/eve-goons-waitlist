@@ -42,6 +42,20 @@ module.exports = function (setup) {
 		});
 	};
 
+	module.findByName_noCase = function (name, cb) {
+		db.find({
+			'name': { $regex: new RegExp('^' + name+'$', 'i') }
+		}).toArray(function (err, docs) {
+			if (err) log.error("findByName: Error ", { err, name });
+			if (docs.length === 0) {
+				cb(false)
+			} else {
+				cb(docs[0])
+			}
+		});
+	};
+
+	//
 	module.findByName = function (name, cb) {
 		db.find({ 'name': name }).toArray(function (err, docs) {
 			if (err) log.error("findByName: Error ", { err, name });

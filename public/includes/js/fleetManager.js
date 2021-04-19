@@ -108,7 +108,7 @@ let socket = io({ autoConnect: false });
 
 socket.on("connect_error", (err) => {
 	console.log(`socket: connect_error due to ${err.message}`);
-	updateServerStatus('Connect error', 'redLabel');
+	updateServerStatus('Connection error', 'redLabel');
 	//if (err.message === "invalid username") {
 	//	alert('Connection error');
 	//}
@@ -141,6 +141,9 @@ let gActive = false;
 let gCurrentSquadDropmenu;
 let gWaitlistSquadDropmenu;
 let gFleetBossDropmenu;
+let gFleetTypeDropmenu;
+let gIncursionTypeDropmenu;
+let gIncursionTypeLabel;
 let gConfigDiv;
 
 let gGroupingOption ='all';
@@ -172,6 +175,7 @@ $(document).ready(() => {
 	gMain = document.getElementById('main');
 
 	socket.on('fleet_data', onFleetData);
+	socket.on('fleet_config', onFleetConfig);
 	socket.on('squads_list', onSquadsList);
 	socket.on('fleet_error', (arg) => onServerError(arg.error));
 
@@ -198,36 +202,36 @@ function setupFleetConfig() {
 
 	let squadOptions = getSquadList();
 
-	let line1 = createDiv(gConfigDiv);
-	createLabel(line1, 'My active squad: ');
+	let currLine = createDiv(gConfigDiv);
+	createLabel(currLine, 'My active squad: ');
 	let activeSquad = globalData.currentSquad || 'select';
-	gCurrentSquadDropmenu = createDropDownMenu(line1, activeSquad, selectActiveSquad, squadOptions, { btnCss: 'squadBtns' });
+	gCurrentSquadDropmenu = createDropDownMenu(currLine, activeSquad, selectActiveSquad, squadOptions, { btnCss: 'squadBtns' });
 	gCurrentSquadDropmenu.style['margin-right'] = '25px';
 
-	createLabel(line1, 'Waitlist squad: ');
+	createLabel(currLine, 'Waitlist squad: ');
 	let waitlistSquad = globalData.waitlistSquad || 'select';
-	gWaitlistSquadDropmenu = createDropDownMenu(line1, waitlistSquad, selectWaitlistSquad, squadOptions, { btnCss: 'squadBtns' });
+	gWaitlistSquadDropmenu = createDropDownMenu(currLine, waitlistSquad, selectWaitlistSquad, squadOptions, { btnCss: 'squadBtns' });
 
-	let btn = addButton(line1, 'refresh', refreshSquads, 'refreshSquads');
+	let btn = addButton(currLine, 'refresh', refreshSquads, 'refreshSquads');
 
 	let pilotsList = getAllPilotNames();
 	//
 
-	let line2 = line1; //createDiv(gConfigDiv);
-	let boss_label = createLabel(line2, 'Boss: ');
+	//let currLine = line1; //createDiv(gConfigDiv);
+	let boss_label = createLabel(currLine, 'Boss: ');
 	boss_label.style['margin-left'] = '100px';
 	let activeBoss = globalData.currentBoss;
-	gFleetBossDropmenu = createDropDownMenu(line2, activeBoss, selectCurrentBoss, pilotsList, { btnCss: 'squadBtns' });
+	gFleetBossDropmenu = createDropDownMenu(currLine, activeBoss, selectCurrentBoss, pilotsList, { btnCss: 'squadBtns' });
 
 	//
-	let boss2_label = createLabel(line2, "(can't find boss? type here)")
+	let boss2_label = createLabel(currLine, "(can't find boss? type here)")
 	boss2_label.style['margin-left'] = '40px';
 	boss2_label.style['fontSize'] = '13px';
 	let boss2_input = document.createElement('input');
 	boss2_input.classList.add('boss2Input');
-	line2.appendChild(boss2_input);
+	currLine.appendChild(boss2_input);
 
-	addButton(line2, '>', function () {
+	addButton(currLine, '>', function () {
 		let boss = boss2_input.value;
 		boss2_input.value = '';
 		socket.emit('setFleetConfig', { fleetId: SERV_fleetId, currentBoss: boss });
@@ -235,13 +239,25 @@ function setupFleetConfig() {
 
 
 	//////
-	let line3 = createDiv(gConfigDiv);
-	addButton(line3, 'Remove fleet', function () {
+	currLine = createDiv(gConfigDiv);
+	currLine.style['margin-top'] = '5px';
+
+	createLabel(currLine, 'Fleet type: ');
+	gFleetTypeDropmenu = createDropDownMenu(currLine, globalData.fleetType, selectFleetType, ['Other', 'Incursion', 'Move op', 'WH'], { btnCss: 'squadBtns' });
+
+
+	gIncursionTypeLabel = createLabel(currLine, 'Incursion type: ');
+	gIncursionTypeLabel.style['margin-left'] = '40px';
+	gIncursionTypeDropmenu = createDropDownMenu(currLine, globalData.incursionType, selectIncursionType, ['', 'Vanguards', 'Assaults', 'Headquarters'], { btnCss: 'squadBtns' });
+
+
+	let rem_btn = addButton(currLine, 'Remove fleet', function () {
 		if (confirm("Do you want to remove fleet from database?")) {
 			socket.emit('removeFleet', { fleetId: SERV_fleetId });
 		}
 	}, 'removeFleetBtn');
 }
+
 
 function getAllPilotNames() {
 	let names = [];
@@ -278,10 +294,18 @@ function selectWaitlistSquad(event) {
 
 function selectCurrentBoss(event) {
 	let chosen = event.target.textContent;
-
 	socket.emit('setFleetConfig', { fleetId: SERV_fleetId, currentBoss: chosen });
 }
 
+function selectFleetType(event) {
+	let chosen = event.target.textContent;
+	socket.emit('setFleetConfig', { fleetId: SERV_fleetId, fleetType: chosen });
+}
+
+function selectIncursionType(event) {
+	let chosen = event.target.textContent;
+	socket.emit('setFleetConfig', { fleetId: SERV_fleetId, incursionType: chosen });
+}
 
 
 function refreshSquads() {
@@ -312,6 +336,28 @@ function setupDevTest() {
 	onFleetData({ pilots: model });
 }
 
+function onFleetConfig(args) {
+	if (!gActive) return;
+
+	if (args.currentBoss) {
+		globalData.currentBoss = args.currentBoss;
+		gFleetBossDropmenu._btn.textContent = args.currentBoss;
+	}
+
+	if (args.fleetType) {
+		globalData.currentBoss = args.fleetType;
+		gFleetTypeDropmenu._btn.textContent = args.fleetType;
+
+		gIncursionTypeDropmenu._btn.style.display = (args.fleetType == 'Incursion') ? 'inline-block' : 'none';
+		gIncursionTypeLabel.style.display = (args.fleetType == 'Incursion') ? 'inline-block' : 'none';
+	}
+
+	if (args.incursionType !== undefined) {
+		globalData.incursionType = args.incursionType;
+		gIncursionTypeDropmenu._btn.textContent = args.incursionType;
+	}
+}
+
 function onSquadsList(args) {
 	if (args.error) {
 		onSmallServerError('Squads List: '+args.error);
@@ -324,23 +370,6 @@ function onSquadsList(args) {
 		gSquadsData = args.squads;
 		updateCurrentSquadDropmenu();
 	}
-
-	if (args.currentBoss) {
-		globalData.currentBoss = args.currentBoss;
-		updateCurrentBoss();
-	}
-
-	//if (args.currentSquadId) {
-	//	let currentSquadId = args.currentSquadId;
-	//	globalData.currentSquad = (gSquadsData[currentSquadId] || {}).name;
-	//	updateCurrentSquad();
-	//}
-	//
-	//if (args.waitlistSquadId) {
-	//	let waitlistSquadId = args.waitlistSquadId;
-	//	globalData.waitlistSquad = (gSquadsData[waitlistSquadId] || {}).name;
-	//	updateWaitlistSquad();
-	//}
 }
 
 function updateCurrentSquad() {
@@ -351,11 +380,6 @@ function updateCurrentSquad() {
 function updateWaitlistSquad() {
 	let waitlistSquad = globalData.waitlistSquad || 'select';
 	gWaitlistSquadDropmenu._btn.textContent = waitlistSquad;
-}
-
-function updateCurrentBoss() {
-	let currentBoss = globalData.currentBoss;
-	gFleetBossDropmenu._btn.textContent = currentBoss;
 }
 
 function getSquadList() {
@@ -487,8 +511,16 @@ function createDiv(parent, text, css) {
 	return div;
 }
 
+function createSpan(parent, text, css) {
+	let div = document.createElement('span');
+	if (css) div.classList.add(css);
+	div.textContent = text;
+	parent.appendChild(div);
+	return div;
+}
+
 function createLabel(parent, text) {
-	let label = createDiv(parent, text, 'mySpan');
+	let label = createSpan(parent, text);
 	label.style["margin-right"] = "6px";
 	return label;
 }
@@ -500,7 +532,7 @@ function setupHeader() {
 
 	let srv = createLabel(statusDiv, 'Server: ');
 
-	gServerStatusDiv = createDiv(statusDiv, '', 'mySpan');
+	gServerStatusDiv = createSpan(statusDiv, '');
 	updateServerStatus('Connecting...');
 
 	// tabs
@@ -526,8 +558,6 @@ function updateServerStatus(text, css) {
 	gServerStatusDiv.textContent = text;
 	gServerStatusDiv.classList.remove(...gServerStatusDiv.classList);
 
-	gServerStatusDiv.classList.add('mySpan');
-	
 	if (css) {
 		gServerStatusDiv.classList.add(css);
 	}
