@@ -500,11 +500,11 @@ function refreshFleet(fleetId) {
 					system: solarName,
 				});
 
-				pilotsStats[row.characterId] = {
-					squad: squadName,
-					ship: shipName,
-					system: solarName,
-				};
+				//pilotsStats[row.characterId] = {
+				//	squad: squadName,
+				//	ship: shipName,
+				//	system: solarName,
+				//};
 
 				if (row.squadId != -1 && squads[row.squadId] === undefined) {
 					fleetData.toLoadSquads = true;
