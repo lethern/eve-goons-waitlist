@@ -21,7 +21,7 @@ module.exports = function (setup) {
 	}
 
 	module.getFleetList = function (fleets) {
-		db.find({}).toArray(function (err, docs) {
+		db.find( { closed: { $not: true } } ).toArray(function (err, docs) {
 			if (err) {
 				log.error("newFleets.getFleetList: error getting the list of fleets", err);
 				fleets(null);
@@ -46,7 +46,7 @@ module.exports = function (setup) {
 
 
     module.close = function(fleetID, cb){
-        db.remove({id: ''+fleetID}, function (err) {
+		db.updateOne({ id: '' + fleetID }, { $set: {closed: true} }, function (err) {
 			if (err){
                 log.error("fleet.delete:", { "fleet id: ": fleetID, err });
                 cb(false);
