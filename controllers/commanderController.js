@@ -49,18 +49,25 @@ exports.registerFleet = function(req, res) {
             req.flash("content", {"class":"error", "title":"We cannot query the fleet.", "message":"This probably means " + req.user.name + " is not the fleet boss."});
             res.status(409).redirect("/commander");
             return;
-        }
+		}
+
+		let url = req.body.url;
+		let fleetType = req.body.fleet;
+		let incursionType = req.body.type;
+		if (fleetType != 'Incursion') incursionType = undefined;
 
         var fleetInfo = {
 			fc: {
 				"characterID": req.user.characterID,
 				"name": req.user.name
 			},
-            type: req.body.type,
+			fleetType,
+			incursionType,
+            //type: req.body.type,
             status: "Not Listed",
             location: null,
             //members: {},
-            url: req.body.url,
+			url,
             id: fleetID+'',
             //comms: { 
             //    name: setup.fleet.comms[req.body.comms].name,

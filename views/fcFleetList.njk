@@ -19,8 +19,8 @@
 								<tr>
 									<th class="tr35"></th>
 									<th>Active FC</th>
-									<th class="d-lg-block d-md-none d-sm-none">Backseat</th>
 									<th>Type</th>
+									<th></th>
 									<th class="d-lg-block d-md-none d-sm-none">Status</th>
 									<th>Fleet Location</th>
 									<th>Size</th>
@@ -32,8 +32,9 @@
 								<tr>
 									<td><img src="https://image.eveonline.com/Character/{{ fleet.fc.characterID if fleet.fc.characterID else '0' }}_32.jpg" alt="FCs Avatar"></td>
 									<td><a href="javascript:void(0);" onclick="showInfo({{ fleet.fc.characterID }})">{{ fleet.fc.name }}</a></td>
-									<td class="d-lg-block d-md-none d-sm-none"><a href="javascript:void(0);" onclick="showInfo({{ fleet.backseat.characterID }})">{{ fleet.backseat.name }}</a>
-									<td>{{ fleet.type }}</td>
+									
+									<td>{{ fleet.fleetType }}</td>
+									<td>{{ fleet.incursionType }}</td>
 									<td class="d-lg-block d-md-none d-sm-none">{{ fleet.status }}</td>
 									<td><a href="javascript:void(0);" onclick="setWaypoint({{ fleet.location.systemID }})">{{ fleet.location.name }}</a></td>
 									<td>{{ fleet.members.length }}</td>
@@ -63,16 +64,30 @@
 						<label for="url">External Fleet Link:</label>
 						<input type="text" id="url" name="url" class="form-control" autocomplete="off" placeholder="https://esi.tech.ccp.is/v1/fleets/...../?datasource=tranquility" autofocus required/>
 					</div>
-					<!-- Select Fleet Type -->
+
+					<!-- Fleet Type -->
 					<div class="form-group">
-						<label for="type">Select Fleet Type:</label>
-						<select name="type" class="form-control dropdown">
-							<option value="Headquarters" selected>Headquarters</option>
-							<option value="Assaults">Assaults</option>
-							<option value="Vanguards">Vanguards</option>
+						<label for="fleet">Fleet Type:</label>
+						<select name="fleet" class="form-control dropdown">
+							<option value="Other" selected>Other</option>
+							<option value="Incursion">Incursion</option>
+							<option value="Moveop">Move op</option>
+							<option value="WH">WH</option>
 						</select>
 					</div>
-					<!-- Select Mumble Channel -->
+
+					<!-- Incursion Type -->
+					<div class="form-group">
+						<label for="type">Incursion Type:</label>
+						<select name="type" class="form-control dropdown">
+							<option value="None" selected></option>
+							<option value="Vanguards">Vanguards</option>
+							<option value="Assaults">Assaults</option>
+							<option value="Headquarters">Headquarters</option>
+						</select>
+					</div>
+
+					<!-- Select Mumble Channel 
 					<div class="form-group">
 						<label for="comms">Select Comms:</label>
 						<select id="comms" name="comms" class="form-control dropdown">
@@ -82,8 +97,11 @@
 							<option value="3">Incursions -> D</option>
 						</select>
 					</div>
+					-->
+					<!-- 
 					<hr />
-					<p class="text-secondary">Fleet Boss: {{ userProfile.name }}</p>				
+					<p class="text-secondary">Fleet Boss: {{ userProfile.name }}</p>	
+					-->
 			  </div>
 			<div class="modal-footer"><button class="btn btn-light" type="button" data-dismiss="modal">Cancel</button><button class="btn btn-success" type="submit"><i class="fas fa-edit"></i> Register Fleet</button></div>
 		</form></div>

@@ -1630,7 +1630,7 @@ nav#sidebar.shrinked a[aria-expanded="true"]::after {
   border: 1px solid #444951;
   background: none;
   border-radius: 0;
-  padding: 10px 15px;
+  padding: 6px 10px;
   color: #979a9f;
 }
 
@@ -1667,7 +1667,6 @@ nav#sidebar.shrinked a[aria-expanded="true"]::after {
 }
 
 .form-control.dropdown{
-	margin-top: -1px;
 	height: 42px!important;
 }
 
@@ -1680,6 +1679,7 @@ button, input[type='submit'] {
 form label {
   font-size: 1rem;
   color: #8a8d93;
+  margin-bottom: .1rem;
 }
 
 .checkbox-template, .radio-template {
@@ -1852,7 +1852,7 @@ input.input-material ~ label.active {
 
 select {
   margin-bottom: 20px;
-  padding: 8px 15px !important;
+  padding: 5px 8px !important;
 }
 
 .modal-open .modal {
@@ -2897,4 +2897,15 @@ a.text-light:focus, a.text-light:hover {
 
 a.text-dark:focus, a.text-dark:hover {
   color: #1d2124 !important;
+}
+
+.form-group {
+	margin-bottom: 0.4rem;
+}
+
+.modal-body {
+	padding: 10px;
+}
+.modal-header {
+	padding: 10px;
 }
