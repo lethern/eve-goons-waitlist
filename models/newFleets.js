@@ -21,7 +21,7 @@ module.exports = function (setup) {
 	}
 
 	module.getFleetList = function (fleets) {
-		db.find( { closed: { $not: true } } ).toArray(function (err, docs) {
+		db.find( { closed: {$in: [null, false]} } ).toArray(function (err, docs) {
 			if (err) {
 				log.error("newFleets.getFleetList: error getting the list of fleets", err);
 				fleets(null);
