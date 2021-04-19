@@ -104,7 +104,11 @@ const IS_TEST = 0;
 	 */
 }
 
-let socket = io({ autoConnect: false });
+let socket = io({
+	autoConnect: false,
+	query: {
+		user: SERV_user
+	} });
 
 socket.on("connect_error", (err) => {
 	console.log(`socket: connect_error due to ${err.message}`);
@@ -180,6 +184,7 @@ $(document).ready(() => {
 	socket.on('fleet_error', (arg) => onServerError(arg.error));
 
 	if (!IS_TEST) {
+		socket.auth = { username: "Bob" };
 		socket.connect();
 		setInterval(checkConnectionLoop, 1000);
 	}

@@ -7,6 +7,7 @@
 
 <script>
 	window.SERV_fleetId = {{ fleetId | safe }};
+	window.SERV_user = '{{ user | safe }}';
 </script>
 <!-- Page Content -->
 <div class="page-content {{ "active" if userProfile.settings.smSideNav == true }}">

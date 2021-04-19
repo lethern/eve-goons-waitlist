@@ -49,7 +49,11 @@ module.exports = function (http, port) {
 	io = raw_io(http);
 
 	io.on('connection', (socket) => {
-		log.debug('a user connected, clientsCount ' + io.engine.clientsCount);
+		let user = '';
+		if (socket.handshake && socket.handshake.query)
+			user = socket.handshake.query.user;
+
+		log.debug('a user ' +user+' connected, clientsCount ' + io.engine.clientsCount);
 
 		socket.on('disconnect', () => {
 			log.debug('user disconnected, clientsCount ' + io.engine.clientsCount);

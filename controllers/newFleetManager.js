@@ -22,7 +22,8 @@ exports.index = function (req, res) {
 			//pilots: JSON.stringify(pilots),
 			fleetId: req.params.fleetID,
 			userProfile: pageData.userProfile,
-			sideBarSelected: pageData.sideBarSelected
+			sideBarSelected: pageData.sideBarSelected,
+			user: req.user.name,
 		}); // fleet, usersOnWaitlist, comms
 	}
 }
