@@ -34,6 +34,12 @@ exports.index = function(req, res){
 //            })
 //        })
 //    })
+
+	var userProfile = req.user;
+	var sideBarSelected = 1;
+	res.render('waitlist.njk', { userProfile, sideBarSelected, banner, fleets, fleetCount, charsOnWl, queueInfo });
+
+
 }
 
 /*
