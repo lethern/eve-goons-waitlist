@@ -291,7 +291,7 @@ function checkFleetToken(fleetId, callback, onError) {
 
 
 	function getAccessToken() {
-		if (!gFleetsData[fleetId]) return;
+		if (!gFleetsData[fleetId] || !gFleetsData[fleetId].fc) return;
 		user.getRefreshToken(gFleetsData[fleetId].fc.characterID, onUserToken);
 	}
 
