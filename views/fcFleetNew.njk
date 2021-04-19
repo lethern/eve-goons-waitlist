@@ -1,14 +1,16 @@
 {% include "./partials/header.njk" -%}
 {% include "./partials/nav.njk" %}
 
-<script src="/includes/js/socket.io.min.js"></script>
-<script src="/includes/js/fleetManager.js?v=1"></script>
-<link rel="stylesheet" href="/includes/css/fleetManager.css?v=1">
 
 <script>
 	window.SERV_fleetId = {{ fleetId | safe }};
 	window.SERV_user = '{{ user | safe }}';
 </script>
+
+<script src="/includes/js/socket.io.min.js"></script>
+<script src="/includes/js/fleetManager.js?v=1"></script>
+<link rel="stylesheet" href="/includes/css/fleetManager.css?v=1">
+
 <!-- Page Content -->
 <div class="page-content {{ "active" if userProfile.settings.smSideNav == true }}">
 
