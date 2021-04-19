@@ -14,6 +14,7 @@ exports.index = function (req, res) {
 	let pageData = {};
 	pageData.userProfile = req.user;
 	pageData.sideBarSelected = 5;
+	let user = req.user.name.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
 	renderPage();
 
@@ -23,7 +24,7 @@ exports.index = function (req, res) {
 			fleetId: req.params.fleetID,
 			userProfile: pageData.userProfile,
 			sideBarSelected: pageData.sideBarSelected,
-			user: req.user.name,
+			user,
 		}); // fleet, usersOnWaitlist, comms
 	}
 }
