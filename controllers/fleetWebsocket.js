@@ -49,17 +49,17 @@ module.exports = function (http, port) {
 	io = raw_io(http);
 
 	io.on('connection', (socket) => {
-		console.log('a user connected');
+		log.debug('a user connected, clientsCount ' + io.engine.clientsCount);
 
 		socket.on('disconnect', () => {
-			console.log('user disconnected');
+			log.debug('user disconnected, clientsCount ' + io.engine.clientsCount);
 		});
 
 		socket.on('listenForFleet', (params) => {
 			let fleetId = params.fleetId;
 			if (!fleetId) return;
 
-			console.log('listenForFleet: ' + fleetId);
+			log.debug('listenForFleet: ' + fleetId);
 			socket.join('fleet' + fleetId);
 
 			//socket.broadcast.emit('ACK', fleetId);
@@ -107,7 +107,7 @@ module.exports = function (http, port) {
 				errorMsg: null
 			});
 			
-			console.log('resetError for ' + fleetId);
+			log.debug('resetError for ' + fleetId);
 		});
 
 		socket.on('setFleetConfig', (params) => {
@@ -122,7 +122,7 @@ module.exports = function (http, port) {
 					if (!bossPilot) return;
 
 					newFleets.updateFleet(fleetId, gFleetsData[fleetId], {
-						currentBoss: params.currentBoss,
+//						currentBoss: params.currentBoss,
 						fc: {
 							characterID: bossPilot.characterID,
 							name: bossPilot.name
@@ -200,7 +200,10 @@ module.exports = function (http, port) {
 
 	const refresh_time = 6 * 1000;
 	setInterval(refreshFleets, refresh_time);
-	log.info('Websocket set, refreshFleets started at ' + refresh_time);
+
+	const slow_refresh_time = 60 * 1000;
+	setInterval(slowRefreshFleets, slow_refresh_time);
+	log.info('Websocket set');
 };
 
 function fetchDBFleet(fleetId, callback) {
@@ -230,10 +233,22 @@ function getWingIdFromSquad(fleetId, squadId) {
 }
 
 function refreshFleets() {
-//	if (io.engine.clientsCount == 0) {
-//		return;
-//	}
+	if (io.engine.clientsCount == 0) {
+		return;
+	}
 
+	refreshFleetsImpl();
+}
+
+function slowRefreshFleets() {
+	if (io.engine.clientsCount != 0) {
+		return;
+	}
+
+	refreshFleetsImpl();
+}
+
+function refreshFleetsImpl() {
 	for (let fleetId in gFleetsData) {
 		let fleet = gFleetsData[fleetId];
 		if (fleet.hasError) continue;
@@ -250,6 +265,7 @@ function refreshFleets() {
 		loadIDNames();
 	}
 }
+
 
 function loadIDNames() {
 	let IDsArray = Array.from(gIDNames_toLoad);
@@ -378,29 +394,6 @@ function refreshFleet(fleetId) {
 	};
 
 	function onFleetDataError(fleetId, error) {
-		log.error('getFleetMembers', error);
-
-		let extraErrorInfo = '';
-		if (error.status == 403 && error.response && error.response.text) {
-			if ((error.response.text.includes && error.response.text.includes('sso_status'))
-				|| (error.response.text.includes && error.response.text.includes('token is expired'))
-			) {
-				log.info('reseting token');
-				gFleetsData[fleetId].accessToken = null;
-			} else {
-				extraErrorInfo = error.response.text;
-				log.info('? ' + error.response.text);
-			}
-		}
-
-		if (error.status == 403 && error.response && error.response.text) {
-			if ((error.response.text["sso_status"] == 401)
-				|| (error.response.text["error"] == 'token is expired')
-			) {
-				log.info('reseting token2222');
-				gFleetsData[fleetId].accessToken = null;
-			}
-		}
 
 		if (error.status == 404 && error.response && error.response.text) {
 			if (error.response.text.includes && error.response.text.includes('The fleet does not exist or')) {
@@ -409,9 +402,28 @@ function refreshFleet(fleetId) {
 			}
 		}
 
+		let log_error = true;
+		let extraErrorInfo = '';
+
+		if (error.status == 403 && error.response && error.response.text && error.response.text.includes) {
+			if ((error.response.text.includes('sso_status'))
+				|| (error.response.text.includes('token is expired'))
+			) {
+				log.info('reseting token');
+				gFleetsData[fleetId].accessToken = null;
+				log_error = false;
+			} else {
+				extraErrorInfo = error.response.text;
+				log.info('? ' + error.response.text);
+			}
+		}
 
 		if (error.response && error.response.text) {
 			extraErrorInfo = error.response.text;
+		}
+
+		if (log_error) {
+			log.error('getFleetMembers', error);
 		}
 
 		onError('ESI fleet error ' + extraErrorInfo);
