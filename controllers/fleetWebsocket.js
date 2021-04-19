@@ -369,7 +369,7 @@ function refreshFleet(fleetId) {
 				}
 			}
 
-			if (error.status == 403 && error.response && error.response.text) {
+			if (error.status == 404 && error.response && error.response.text) {
 				if (error.response.text.includes && error.response.text.includes('The fleet does not exist or')) {
 					onKnownError('The fleet does not exist or fleet Boss changed');
 					return;
