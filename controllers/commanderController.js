@@ -7,10 +7,10 @@ const log = require('../logger.js')(module);
 exports.index = function(req, res) {
     if (users.isRoleNumeric(req.user, 1)) {
 		newFleets.getFleetList(function (fleets) {
-            if (!fleets) {
-                res.status(403).send("No fleets found<br><br><a href='/'>Go back</a>");
-                return;
-            }
+            //if (!fleets) {
+            //    res.status(403).send("No fleets found<br><br><a href='/'>Go back</a>");
+            //    return;
+            //}
 
             var userProfile = req.user;
             var sideBarSelected = 5;
