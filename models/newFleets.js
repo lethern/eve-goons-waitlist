@@ -9,7 +9,7 @@ const cache = require('../cache.js')(setup);
 module.exports = function (setup) {
 
     module.get = function(fleetID, cb){
-		db.findOne({ 'id': ''+fleetID }, function (err, doc) {
+		db.findOne({ 'id': '' + fleetID, closed: { $in: [null, false] } }, function (err, doc) {
 			if (err) log.error("newFleets.get: Error for db.findOne", { err, fleetID });
 			if (!doc) {
 				log.error("newFleets.get: not found", { fleetID });
@@ -46,7 +46,7 @@ module.exports = function (setup) {
 
 
     module.close = function(fleetID, cb){
-		db.updateOne({ id: '' + fleetID }, { $set: {closed: true} }, function (err) {
+		db.updateOne({ id: '' + fleetID, closed: { $in: [null, false] }}, { $set: {closed: true} }, function (err) {
 			if (err){
                 log.error("fleet.delete:", { "fleet id: ": fleetID, err });
                 cb(false);
@@ -73,7 +73,7 @@ module.exports = function (setup) {
 			fleetObj[it] = data[it];
 		}
 
-		db.updateOne({ id: '' + fleetID }, { $set: data }, function (err) {
+		db.updateOne({ id: '' + fleetID, closed: { $in: [null, false] } }, { $set: data }, function (err) {
 			if (err) {
 				log.error("newFleets.updateCommander: ", { "FC": fc.name, err });
 				if (callback)
@@ -86,35 +86,6 @@ module.exports = function (setup) {
 		})
 	}
 
-    module.updateCommander = function(fleetID, fc, cb){
-        let newFC = {
-            
-        }
-
-		db.updateOne({ id: '' + fleetID }, { $set: { fc: newFC, accessToken: null }}, function(err){
-            if(err){
-				log.error("newFleets.updateCommander: ", {"FC": fc.name, err});
-                cb(400);
-                return;
-            }
-
-            cb(200);
-        })
-    }
-
-    /*
-    module.updateStatus = function(fleetID, status, cb){
-        db.updateOne({id: fleetID}, {$set: {status: status }}, function(err){
-            if(err){
-                log.error("fleets.updateStatus: ", {"fleet ID": fleetID, err});
-                cb(400);
-                return;
-            }
-
-            cb(200);
-        })           
-    }
-	*/
 
 
     return module;
