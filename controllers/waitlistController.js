@@ -18,22 +18,22 @@ exports.index = function(req, res){
         return;
     }
 
-    banner.getLast(function(banner){
-        fleets.getFleetList(function (fleets) {           
-            var fleetCount = 0;
-            for (var i = 0; i < fleets.length; i++) {
-                if (fleets[i].status !== "Not Listed") fleetCount++;
-            }
-
-            waitlist.getQueue((!!req.user.waitlistMain)? req.user.waitlistMain.characterID : 0, function(queueInfo) {
-                waitlist.checkCharsOnWaitlist(req.user.account.pilots, function(charsOnWl) {                   
-                    var userProfile = req.user;
-                    var sideBarSelected = 1;
-                    res.render('waitlist.njk', {userProfile, sideBarSelected, banner, fleets, fleetCount, charsOnWl, queueInfo});
-                })
-            })
-        })
-    })
+//    banner.getLast(function(banner){
+//        fleets.getFleetList(function (fleets) {           
+//            var fleetCount = 0;
+//            for (var i = 0; i < fleets.length; i++) {
+//                if (fleets[i].status !== "Not Listed") fleetCount++;
+//            }
+//
+//            waitlist.getQueue((!!req.user.waitlistMain)? req.user.waitlistMain.characterID : 0, function(queueInfo) {
+//                waitlist.checkCharsOnWaitlist(req.user.account.pilots, function(charsOnWl) {                   
+//                    var userProfile = req.user;
+//                    var sideBarSelected = 1;
+//                    res.render('waitlist.njk', {userProfile, sideBarSelected, banner, fleets, fleetCount, charsOnWl, queueInfo});
+//                })
+//            })
+//        })
+//    })
 }
 
 /*

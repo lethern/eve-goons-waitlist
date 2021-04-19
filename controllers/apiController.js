@@ -38,24 +38,24 @@ exports.openMarket = function(req, res) {
 }
 //Show the fleet at a glance window.
 exports.fleetAtAGlance = function(req, res) {
-    fleets.get(req.params.fleetid, function (fleet) {
-        if (fleet) {
-            var ships = [];
-            
-            var counter = 0;
-            for(var i = 0; i < fleet.members.length; i++) { //where the fuck is shipID coming from? I'm bad
-                cache.get(fleet.members[i].ship_type_id, null, function(ship) {
-                ships.push(ship); //<<<<<
-                counter++;
-                    if(counter === fleet.members.length) {
-                        module.createShipsHTML(ships, req.params.filter, res);
-                    }
-                });
-            }
-        } else {
-            res.status(400).send("No fleet found");
-        }
-    });     
+//    fleets.get(req.params.fleetid, function (fleet) {
+//        if (fleet) {
+//            var ships = [];
+//            
+//            var counter = 0;
+//            for(var i = 0; i < fleet.members.length; i++) { //where the fuck is shipID coming from? I'm bad
+//                cache.get(fleet.members[i].ship_type_id, null, function(ship) {
+//                ships.push(ship); //<<<<<
+//                counter++;
+//                    if(counter === fleet.members.length) {
+//                        module.createShipsHTML(ships, req.params.filter, res);
+//                    }
+//                });
+//            }
+//        } else {
+//            res.status(400).send("No fleet found");
+//        }
+//    });     
 }
 
 //Store a new banner
