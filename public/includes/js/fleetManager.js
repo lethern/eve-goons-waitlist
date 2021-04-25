@@ -1162,6 +1162,14 @@ function updateRow(pilotData) {
 			break;
 		}
 	}
+
+	let row = pilotData.rowDOM;
+
+	// update "Alt" if needed
+	if (model.main && row.classList.contains('rowMain')) {
+		row.classList.remove('rowMain');
+		row.classList.add('rowAlt');
+	}
 	
 };
 
