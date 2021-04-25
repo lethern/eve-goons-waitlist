@@ -121,7 +121,7 @@ body {
 }
 
 .rowAlt:nth-child(odd) {
-	background-color: #667573;
+	background-color: #697876;
 }
 
 .orangeSquad {
@@ -145,9 +145,14 @@ body {
 	display: inline-block;
 }
 
-.altName {
+.rowAlt > div > div.pilotName {
 	display: inline-block;
 	color: #c5f7f1;
+}
+
+.altName {
+	display: inline-block;
+	/*color: #c5f7f1;*/
 	background-color: #5b5b5b;
 	/*font-style: italic;*/
 	/*padding: 0px 8px 0 5px;*/
