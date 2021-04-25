@@ -1,6 +1,7 @@
 const setup = require('../setup.js');
 const user = require('../models/user.js')(setup);
 const users = require('../models/users.js')(setup);
+const miniUsers = require('../models/miniUsers.js')(setup);
 const newFleets = require('../models/newFleets.js')(setup);
 const log = require('../logger.js')(module);
 const raw_io = require('socket.io');
@@ -200,6 +201,34 @@ module.exports = function (http, port) {
 			});
 		});
 
+		socket.on('connectAltToMain', (params) => {
+			let fleetId = params.fleetId;
+			if (!fleetId) return;
+
+			let selectedMain = params.selectedMain;
+			let selectedAlt = params.selectedAlt;
+			if (!selectedMain || !selectedAlt) return;
+
+			let mainID;
+			let altID;
+			for (let id in gUserNamesData) {
+				let name = gUserNamesData[id].name;
+				if (name == selectedMain) mainID = id;
+				if (name == selectedAlt) altID = id;
+			}
+			if (!mainID || !altID) return;
+
+			miniUsers.connectAltToMain({ name: selectedMain, ID: mainID }, { name: selectedAlt, ID: altID }, function (err) {
+				if (err) {
+					socket.emit('small_error', { error: err });
+					return;
+				}
+
+				// success
+				gUserNamesData[altID].main = selectedMain;
+			});
+		});
+
 	});
 
 	const refresh_time = 6 * 1000;
@@ -383,7 +412,7 @@ function refreshFleet(fleetId) {
 
 		let charIDs = fleetData.map(row => row.characterId);
 
-		let foundIDs = charIDs.filter(x => !!gUserNamesData[x]);
+		let foundIDs = charIDs.filter(x => (gUserNamesData[x] && gUserNamesData[x].name));
 		let missingIDs = diffArray(charIDs, foundIDs);
 
 		if (missingIDs.length) {
@@ -441,23 +470,58 @@ function refreshFleet(fleetId) {
 			return;
 		}
 
-		DBdata.forEach(r => gUserNamesData[r.characterID] = r.name);
+		DBdata.forEach(r => {
+			if (!gUserNamesData[r.characterID]) gUserNamesData[r.characterID] = {};
+			gUserNamesData[r.characterID].name = r.name;
+
+			if (r.account && !r.account.main)
+				gUserNamesData[r.characterID].main = (gUserNamesData[r.account.mainID] || {}).name
+		});
 
 		let foundIDs = DBdata.map(row => row.characterID);
 		let missingIDs = diffArray(charIDs, foundIDs);
 
 		if (missingIDs.length > 0) {
-			var evesso = ESI2_defaultClient.authentications['evesso'];
-			evesso.accessToken = gFleetsData[fleetId].accessToken;
 
-//			console.log('>> onDBLoadUsers -> postUniverseNames');
-			UniverseApi.postUniverseNames(missingIDs, {}, function (error, ESIdata) {
-				if (error) {
-					onError('ESI universeNames error');
+
+			miniUsers.findMultiple(missingIDs, onMiniUsers);
+
+			function onMiniUsers(readMiniUsers) {
+				if (!readMiniUsers) {
+					onError('onDBLoadUsers miniUsers error');
 					return;
 				}
-				onESILoadUsers(ESIdata, fleetData);
-			});
+
+				readMiniUsers.forEach(r => {
+					if (!gUserNamesData[r.characterID]) gUserNamesData[r.characterID] = {};
+					gUserNamesData[r.characterID].name = r.name;
+
+					if (r.account && !r.account.main)
+						gUserNamesData[r.characterID].main = (gUserNamesData[r.account.mainID] || {}).name
+				});
+
+				let foundIDs = readMiniUsers.map(row => row.characterID);
+				let missingIDs = diffArray(charIDs, foundIDs);
+
+				if (missingIDs.length > 0) {
+					var evesso = ESI2_defaultClient.authentications['evesso'];
+					evesso.accessToken = gFleetsData[fleetId].accessToken;
+
+					//			console.log('>> onDBLoadUsers -> postUniverseNames');
+					UniverseApi.postUniverseNames(missingIDs, {}, function (error, ESIdata) {
+						if (error) {
+							onError('ESI universeNames error');
+							return;
+						}
+						onESILoadUsers(ESIdata, fleetData);
+					});
+				} else {
+					prepareFleetData(fleetData);
+				}
+			}
+
+
+			
 		} else {
 //			console.log('onDBLoadUsers -> prepareFleetData');
 			prepareFleetData(fleetData);
@@ -466,7 +530,10 @@ function refreshFleet(fleetId) {
 	}
 
 	function onESILoadUsers(ESIdata, fleetData) {
-		ESIdata.forEach(r => gUserNamesData[r.id] = r.name);
+		ESIdata.forEach(r => {
+			if (!gUserNamesData[r.id]) gUserNamesData[r.id] = {};
+			gUserNamesData[r.id].name = r.name;
+		});
 
 //		console.log('onESILoadUsers -> prepareFleetData');
 		prepareFleetData(fleetData);
@@ -484,7 +551,7 @@ function refreshFleet(fleetId) {
 				let squad = squads[row.squadId];
 				let squadName = '?';
 				if (squad) squadName = squad.name;
-				if (row.squadId == -1) squadName = row.roleName;//'Fleet commander';
+				if (row.squadId == -1) squadName = row.roleName.replace(' (Boss)', ''); //'Fleet commander (Boss)' -> 'Fleet commander';
 
 				let squadChanging = 0;
 
@@ -499,12 +566,15 @@ function refreshFleet(fleetId) {
 				if (shipName.startsWith('Capsule')) shipName = 'Capsule'; // cut the long Capsule - Genolution 'Auroral' 197-variant
 
 				let inFleet_mins = (new Date() - row.joinTime) / 60000;
-				let name = gUserNamesData[row.characterId];
+
+				let userData = gUserNamesData[row.characterId];
+
+				// main
 
 				pilots.push({
 					id: row.characterId,
-					name: name,
-					main: null,
+					name: userData.name,
+					main: userData.main,
 					squad: squadName,
 					squadChanging: squadChanging,
 					shipsSub: [],

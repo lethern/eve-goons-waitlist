@@ -56,7 +56,13 @@ body {
 
 .errorDiv {
 	background-color: #6f1616;
-	color: #d4cbcb;
+	color: #dec9c9;
+	padding: 5px;
+}
+
+.smallErrorDiv {
+	background-color: #352d2d;
+	color: #d8c9c9;
 	padding: 5px;
 }
 
@@ -84,7 +90,7 @@ body {
 }
 
 .redLabel {
-	color: #f38268;
+	color: #f68166;
 }
 
 .errorBtn {
@@ -98,7 +104,7 @@ body {
 .fleetRow > div {
 	display: table-cell;
 	white-space: nowrap;
-	padding: 2px 15px;
+	padding: 2px 2px 2px 12px;
 	color: #f2f2f2;
 }
 
@@ -119,19 +125,19 @@ body {
 }
 
 .orangeSquad {
-	color: #e5a171;
+	color: #e9a473;
 }
 
 .greenSquad {
-	color: #8fd078;
+	color: #9fe686;
 }
 
 .blueSquad {
-	color: #a3c3dc;
+	color: #aed0ea;
 }
 
 .redSquad {
-	color: #e9655c;
+	color: #ee675e;
 }
 
 .textButton {
@@ -145,7 +151,7 @@ body {
 	background-color: #5b5b5b;
 	/*font-style: italic;*/
 	/*padding: 0px 8px 0 5px;*/
-	padding: 0px 6px;
+	padding: 1px 6px 0 6px;
 	font-size: 0.9rem;
 	/*margin-left: 20px;*/
 }
@@ -171,6 +177,15 @@ body {
 	padding-right: 0px !important;
 }
 
+.connectBtns {
+	/*display: none !important;*/
+	width: 0px !important;
+	min-width: 0px !important;
+	max-width: 0px !important;
+	min-height: 0px !important;
+	height: 0px !important;
+	padding-right: 0px !important;
+}
 .squadBtns {
 	border: 1px solid;
 	border-radius: 3px;

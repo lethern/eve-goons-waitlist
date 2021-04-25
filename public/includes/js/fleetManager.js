@@ -154,7 +154,7 @@ let gGroupingOption ='all';
 
 function onSmallServerError(error) {
 
-	let smallError = createDiv(gSmallErrorDiv, 'Error occured: ' + error);
+	let smallError = createDiv(gSmallErrorDiv, 'Error occured: ' + error, 'smallErrorDiv');
 
 	setTimeout(() => {
 		gSmallErrorDiv.removeChild(smallError);
@@ -182,6 +182,7 @@ $(document).ready(() => {
 	socket.on('fleet_config', onFleetConfig);
 	socket.on('squads_list', onSquadsList);
 	socket.on('fleet_error', (arg) => onServerError(arg.error));
+	socket.on('small_error', (arg) => onSmallServerError(arg.error));
 
 	if (!IS_TEST) {
 		socket.auth = { username: "Bob" };
@@ -540,6 +541,10 @@ function setupHeader() {
 	gServerStatusDiv = createSpan(statusDiv, '');
 	updateServerStatus('Connecting...');
 
+	if (IS_TEST) {
+		let testDiv = createDiv(gMainHead, 'TEST');
+		testDiv.style['font-size'] = '50px';
+	}
 	// tabs
 	let configTabBtn = addButton(statusDiv, 'Config', onConfigTab, 'tabBtn');
 	configTabBtn.style['margin-left'] = '50px';
@@ -573,14 +578,14 @@ let colsStruct = [
 	{ name: 'squad',		label: 'Squad', width: 120},
 	{ name: 'squadBtn',		label: '', width: 40},
 	{ name: 'ship',			label: 'Ship', width: 170},
-	{ name: 'system',		label: 'System', width: 70 },
+	{ name: 'system',		label: 'System', width: 80 },
 
 	{ name: 'shipsSub',		label: 'Will fly', width: 100, disabled: 1 },
 	{ name: 'shipsAll',		label: 'Can fly', width: 100, disabled: 1 },
 	{ name: 'timeActive',	label: 'Time Active', width: 60, disabled: 1 },
 	{ name: 'timeWaitlist', label: 'Time Waitlist', width: 60, disabled: 1 },
 
-	{ name: 'timeTotal',	label: 'Time total', width: 50},
+	{ name: 'timeTotal',	label: 'Time total', width: 40},
 ];
 
 function setupTableTabs() {
@@ -654,12 +659,54 @@ function moveToSquad(event) {
 	//};
 };
 
-function showBtnMenu(event) {
+function onShowBtnMenu(event) {
 	let btnDiv = event.target;
+	let dropmenu = btnDiv.parentNode.parentNode;
 
+	if (btnDiv.textContent == 'Connect to main')
+		showConnectToMain(dropmenu);
 	//btnDiv.menuDOM.style.display = 'block';
 	//$(btnDiv.dropmenuDOM).dropdown();
 }
+
+
+function showConnectToMain(dropmenu) {
+
+	let parent = dropmenu.parentNode;
+	let pilots = getAllPilotNames();
+
+
+	if (dropmenu.connectDropmenu) {
+		clearChildren(dropmenu.connectDropmenu._btn);
+		clearChildren(dropmenu.connectDropmenu);
+		parent.removeChild(dropmenu.connectDropmenu);
+		dropmenu.connectDropmenu.dropmenu = null;
+	}
+
+	dropmenu.connectDropmenu = createDropDownMenu(parent, '', onConnectToMain, pilots, { btnCss: 'connectBtns' });
+	dropmenu.connectDropmenu.dropmenu = dropmenu;
+	
+
+	setTimeout(function () {
+		$(dropmenu.connectDropmenu._btn).dropdown('toggle')
+	}, 10);
+}
+
+function onConnectToMain(event) {
+	let btnDiv = event.target;
+	let dropmenu = btnDiv.parentNode.parentNode.dropmenu;
+	let pilotData = dropmenu.pilotData;
+
+	let selectedMain = btnDiv.textContent;
+	let selectedAlt = pilotData.model.name;
+
+	socket.emit('connectAltToMain', {
+		fleetId: SERV_fleetId,
+		selectedMain,
+		selectedAlt
+	});
+}
+
 
 function addDropDownButton(parent, text, callback, cssClss) {
 	let cell = document.createElement('a');
@@ -706,12 +753,12 @@ function setupPilotBtns(pilotData) {
 	let btnsDiv = pilotData.cellsDOM['squadBtn'];
 
 	let options = [];
-	if (!pilotData.model.gMain) {
-		options.push('Connect to main');
-	}
-	options.push('test');
+	//if (!pilotData.model.main) {
+	options.push('Connect to main');
+	//}
+	//options.push('test');
 
-	let dropmenu = createDropDownMenu(btnsDiv, '...', showBtnMenu, options, { btnCss: 'pilotBtns' });
+	let dropmenu = createDropDownMenu(btnsDiv, '...', onShowBtnMenu, options, { btnCss: 'pilotBtns' });
 
 	dropmenu.pilotData = pilotData;
 
@@ -1017,6 +1064,13 @@ function removeRow_inactive(pilotData) {
 	//globalData.fleetBody.removeChild(pilotData.rowDOM);
 }
 
+function clearChildren(elem) {
+	if (!elem) return;
+	while (elem.firstChild) {
+		elem.removeChild(elem.firstChild);
+	}
+};
+
 function updateRow_inactive(pilotData) {
 	let cells = pilotData.cellsDOM;
 
@@ -1049,6 +1103,12 @@ function updateRow(pilotData) {
 			case 'name':
 				cells['name_up'].textContent = model.name;
 				if (model.main) {
+
+					if (!cells['name_down']) {
+						cells['name_down'] = addCell(cells['name'], '', 'altNameImg');
+						cells['name_down'] = addCell(cells['name'], '', 'altName');
+					}
+
 					cells['name_down'].textContent = model.main;
 				}
 			break;
@@ -1125,6 +1185,7 @@ let shipToColorMap = {
 	'Drake': '#33c25f',
 	'Phantasm': '#33c25f',
 	'Drekavac': '#33c25f',
+	'Vulture': '#33c25f',
 	//
 	'Capsule': '#e9e9e9',
 }
