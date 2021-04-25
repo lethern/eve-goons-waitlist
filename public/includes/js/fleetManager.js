@@ -807,8 +807,8 @@ function addRow(pilotData) {
 
 		switch (name) {
 			case 'name':
-				cells['name'] = addCell(row, '', 'pilotName');
-				cells['name_up'] = addCell(cells['name'], '');
+				cells['name'] = addCell(row, '');
+				cells['name_up'] = addCell(cells['name'], '', 'pilotName');
 				if (model.main) {
 					cells['name_down'] = addCell(cells['name'], '', 'altNameImg');
 					cells['name_down'] = addCell(cells['name'], '', 'altName');
