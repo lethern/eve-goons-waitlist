@@ -620,33 +620,7 @@ function refreshFleet(fleetId) {
 
 
 	function onError(msg) {
-		const ErrorTimeToClean = 5 * 60 * 1000;
-
-		if (!gFleetsData[fleetId]) return;
-
-		let errorsCount = gFleetsData[fleetId].errorsCount;
-		if (gFleetsData[fleetId].lastErrorDate && (new Date() - gFleetsData[fleetId].lastErrorDate) > ErrorTimeToClean)
-			errorsCount = 0;
-
-		errorsCount++;
-		let lastErrorDate = new Date();
-		let hasError = gFleetsData[fleetId].hasError;
-		let errorMsg = undefined;
-
-		if (gFleetsData[fleetId].errorsCount >= 5) {
-			log.error('max error (5) for fleetId=' + fleetId, msg);
-			hasError = true;
-			errorMsg = msg;
-
-			io.to('fleet' + fleetId).emit('fleet_data', { error: msg });
-		}
-
-		newFleets.updateFleet(fleetId, gFleetsData[fleetId], {
-			errorsCount,
-			lastErrorDate,
-			hasError,
-			errorMsg
-		});
+		onFleetError(fleetId, msg);
 	}
 
 	function onKnownError(msg) {
@@ -663,7 +637,35 @@ function refreshFleet(fleetId) {
 };
 
 
+function onFleetError(fleetId, msg) {
+	const ErrorTimeToClean = 5 * 60 * 1000;
 
+	if (!gFleetsData[fleetId]) return;
+
+	let errorsCount = gFleetsData[fleetId].errorsCount;
+	if (gFleetsData[fleetId].lastErrorDate && (new Date() - gFleetsData[fleetId].lastErrorDate) > ErrorTimeToClean)
+		errorsCount = 0;
+
+	errorsCount++;
+	let lastErrorDate = new Date();
+	let hasError = gFleetsData[fleetId].hasError;
+	let errorMsg = undefined;
+
+	if (gFleetsData[fleetId].errorsCount >= 5) {
+		log.error('max error (5) for fleetId=' + fleetId, msg);
+		hasError = true;
+		errorMsg = msg;
+
+		io.to('fleet' + fleetId).emit('fleet_data', { error: msg });
+	}
+
+	newFleets.updateFleet(fleetId, gFleetsData[fleetId], {
+		errorsCount,
+		lastErrorDate,
+		hasError,
+		errorMsg
+	});
+}
 
 function refreshFleetWings(fleetId, callback) {
 	if (!checkFleetToken(fleetId, getFleetWings, onError)) {
@@ -711,9 +713,10 @@ function refreshFleetWings(fleetId, callback) {
 		if (callback) callback({ squads });
 	}
 
-	function onError(error) {
+	function onError(msg) {
+		onFleetError(fleetId, msg);
 		log.error('refreshFleetWings: ', error);
 		if (callback) callback({ error: (error.message ? error.message : error) });
-	};
+	}
 }
 
