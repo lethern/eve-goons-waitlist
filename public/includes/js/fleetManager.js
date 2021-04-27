@@ -969,6 +969,11 @@ function rerenderTable() {
 		tmp.appendChild(pilotData.rowDOM);
 	}
 
+	for (let it in globalData.tables) {
+		let table = globalData.tables[it];
+		table._add = [];
+	}
+
 	for (let name in gPilotsData) {
 		let pilotData = gPilotsData[name];
 
