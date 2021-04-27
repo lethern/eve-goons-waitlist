@@ -715,8 +715,8 @@ function refreshFleetWings(fleetId, callback) {
 
 	function onError(msg) {
 		onFleetError(fleetId, msg);
-		log.error('refreshFleetWings: ', error);
-		if (callback) callback({ error: (error.message ? error.message : error) });
+		log.error('refreshFleetWings: ', msg);
+		if (callback) callback({ error: (msg.message ? msg.message : msg) });
 	}
 }
 
