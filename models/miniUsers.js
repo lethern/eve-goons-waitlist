@@ -208,7 +208,7 @@ module.exports = function (setup) {
 					let alt = alts[it];
 					++it;
 					let id = alt.characterID;
-					let mainId = doc.account.mainID;
+					let mainId = alt.account.mainID;
 					if (!mainId) { update_step(); return; }
 					let main = mains[mainId];
 					if (!main) { update_step(); return; }
