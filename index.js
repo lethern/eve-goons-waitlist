@@ -149,7 +149,11 @@ database.connect(function () {
 	http.listen(setup.settings.port, () => {
 		log.info('Server online');
 	});
-	
+
+
+
+	const miniUsers = require('../models/miniUsers.js')(setup);
+	miniUsers.reform1();
 });
 
 

@@ -175,7 +175,11 @@ module.exports = function (setup) {
 			}
 
 			//Remove master account fields, set main to false and associate to a master account
-			var account = {"main": false, "mainID": (user.account.main)? user.characterID: user.account.mainID};
+			var account = {
+				"main": false,
+				"mainID": (user.account.main) ? user.characterID : user.account.mainID,
+				"mainName": (user.account.main) ? user.name : user.account.mainName,
+			};
 			db.updateOne({ 'characterID': AltUser.characterID }, { $unset: {role:1, notes:1, ships:1, statistics:1}, $set: { account: account}}, function (err) {
 				if(err) console.log("users.linkPilots - error updating alt account: ", err);
 				if(!err){

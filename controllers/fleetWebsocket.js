@@ -286,12 +286,12 @@ function refreshFleetsImpl() {
 		let fleet = gFleetsData[fleetId];
 		if (fleet.hasError) continue;
 
+		refreshFleet(fleetId);
+
 		if (fleet.accessToken && !fleet.fc && fleet.toLoadSquads) {
 			fleet.toLoadSquads = false;
 			refreshFleetWings(fleetId);
 		}
-
-		refreshFleet(fleetId);
 	}
 
 	if (gIDNames_toLoad.size > 0) {
@@ -475,7 +475,7 @@ function refreshFleet(fleetId) {
 			gUserNamesData[r.characterID].name = r.name;
 
 			if (r.account && !r.account.main)
-				gUserNamesData[r.characterID].main = (gUserNamesData[r.account.mainID] || {}).name
+				gUserNamesData[r.characterID].main = r.account.mainName;
 		});
 
 		let foundIDs = DBdata.map(row => row.characterID);
@@ -497,7 +497,7 @@ function refreshFleet(fleetId) {
 					gUserNamesData[r.characterID].name = r.name;
 
 					if (r.account && !r.account.main)
-						gUserNamesData[r.characterID].main = (gUserNamesData[r.account.mainID] || {}).name
+						gUserNamesData[r.characterID].main = r.account.mainName;
 				});
 
 				let foundIDs = readMiniUsers.map(row => row.characterID);
