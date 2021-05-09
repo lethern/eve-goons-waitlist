@@ -184,6 +184,7 @@ module.exports = function (setup) {
 		})
 	}
 
+	/*
 	module.reform1 = function () {
 		miniDb.find({ "account.main" : false }).toArray(function (err, alts) {
 			if (err) log.error("user.reform1: Error ", { err });
@@ -260,7 +261,53 @@ module.exports = function (setup) {
 
 					console.log("updating b");
 					usersDb.updateOne({ 'characterID': id }, {
-						//$unset: { role: 1, notes: 1, ships: 1, statistics: 1 },
+						$set: { "account.mainName": main }
+					}, update_step);
+				}
+			}
+		})
+	}
+	*/
+
+	module.reform2 = function () {
+		usersDb.find({ "account.main": false }).toArray(function (err, alts) {
+			if (err) log.error("user.reform1: Error ", { err });
+
+			console.log("alts " + alts.length);
+
+			let ids = alts.map(r => r.account.mainID);
+			let mains = {};
+
+			usersDb.find({ "characterID": { $in: ids } }).toArray(function (err, main_arr) {
+				if (err) log.error("user.reform1 b: Error ", { err });
+
+				console.log("updating b " + main_arr.length);
+
+				for (let m of main_arr) {
+					mains[m.characterID] = m.name;
+				}
+
+				fix_2();
+			});
+
+
+			function fix_2() {
+				let it = 0;
+				update_step();
+
+				function update_step() {
+					if (it >= alts.length) return;
+
+					let alt = alts[it];
+					++it;
+					let id = alt.characterID;
+					let mainId = alt.account.mainID;
+					if (!mainId) { console.log("!mainId b"); update_step(); return; }
+					let main = mains[mainId];
+					if (!main) { console.log("!main b"); update_step(); return; }
+
+					console.log("updating: "+id+" -> "+main);
+					usersDb.updateOne({ 'characterID': id }, {
 						$set: { "account.mainName": main }
 					}, update_step);
 				}

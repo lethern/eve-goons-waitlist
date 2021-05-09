@@ -150,10 +150,8 @@ database.connect(function () {
 		log.info('Server online');
 	});
 
-
-
 	const miniUsers = require('./models/miniUsers.js')(setup);
-	miniUsers.reform1();
+	miniUsers.reform2();
 });
 
 
