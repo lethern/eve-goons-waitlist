@@ -152,7 +152,7 @@ database.connect(function () {
 
 
 
-	const miniUsers = require('models/miniUsers.js')(setup);
+	const miniUsers = require('./models/miniUsers.js')(setup);
 	miniUsers.reform1();
 });
 
