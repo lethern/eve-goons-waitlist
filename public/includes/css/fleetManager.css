@@ -304,3 +304,11 @@ body {
 	display: inline-block;
 	vertical-align: middle;
 }
+
+
+
+
+
+.dropdown-menu{
+	z-index: 9999;
+}

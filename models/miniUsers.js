@@ -268,7 +268,7 @@ module.exports = function (setup) {
 		})
 	}
 	*/
-
+	/*
 	module.reform2 = function () {
 		usersDb.find({ "account.main": false }).toArray(function (err, alts) {
 			if (err) log.error("user.reform1: Error ", { err });
@@ -314,6 +314,6 @@ module.exports = function (setup) {
 			}
 		})
 	}
-
+	*/
 	return module;
 }
