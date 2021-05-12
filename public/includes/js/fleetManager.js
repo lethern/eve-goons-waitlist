@@ -270,7 +270,7 @@ function getAllPilotNames() {
 	for (let name in gPilotsData) {
 		names.push(name);
 	}
-	return names.sort();
+	return names.sort((a, b) => a.localeCompare(b));
 }
 
 function findSquadIdOfName(argName) {
@@ -394,7 +394,7 @@ function getSquadList() {
 		let squad = gSquadsData[it].name;
 		squadOptions.push(squad);
 	}
-	return squadOptions.sort();
+	return squadOptions.sort( (a, b) => a.localeCompare(b) );
 }
 
 function updateCurrentSquadDropmenu() {
@@ -1050,7 +1050,8 @@ function rerenderTable() {
 	// add squads
 	let its1 = Object.keys(globalData.tables).filter(n => n.toLowerCase().startsWith('squad'))
 	let its2 = Object.keys(globalData.tables).filter(n => !n.toLowerCase().startsWith('squad'))
-	let its = its1.sort().concat(its2.sort());
+	let its = its1.sort((a, b) => a.localeCompare(b))
+		.concat(its2.sort((a, b) => a.localeCompare(b)));
 	
 	for (let it of its) {
 		if (['all', 'alts'].includes(it)) continue;
