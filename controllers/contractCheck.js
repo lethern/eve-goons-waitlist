@@ -194,8 +194,8 @@ function renderContracts(req, res, mode) {
 	let date_to_filter = date_to;
 	//if (!isNaN(date_to_filter)) date_to_filter.setDate(date_to_filter.getDate() + 1);
 
-	if (!isNaN(date_from)) date_from.setHours(13);
-	if (!isNaN(date_to_filter)) date_to_filter.setHours(13);
+	if (!isNaN(date_from)) date_from.setHours(12);
+	if (!isNaN(date_to_filter)) date_to_filter.setHours(12);
 
 	console.log('filter from ' + date_from + ' to ' + date_to_filter)
 	user.getRefreshToken(characterID, function (accessToken) {
@@ -279,14 +279,32 @@ function renderContracts(req, res, mode) {
 				if (!isNaN(date_to_filter) && row.dateIssued > date_to_filter) ok = false;
 				return ok;
 			});
-
+      
+      
+      /*
+      let r1 = new Date('2021.06.19 06:59');
+      let r2 = new Date('2021.06.19 07:01');
+      data.forEach( (a)=>{
+        if( r1 < a.dateIssued && a.dateIssued < r2){
+          console.log(a);
+        }
+      })
+*/
 			data.forEach(row => {
 				if (row.origin.issuerId) {
 					if (!userIDs.includes(row.origin.issuerId)) userIDs.push(row.origin.issuerId);
 				}
-				if (row.origin.assigneeId) {
-					if (!userIDs.includes(row.origin.assigneeId)) userIDs.push(row.origin.assigneeId);
-				}
+        
+        if(row.origin.availability == 'personal' && row.origin.forCorporation== false){
+          if (row.origin.acceptorId) {
+            if (!userIDs.includes(row.origin.acceptorId)) userIDs.push(row.origin.acceptorId);
+          }
+        }
+
+        if (row.origin.assigneeId) {
+          if (!userIDs.includes(row.origin.assigneeId)) userIDs.push(row.origin.assigneeId);
+        }
+
 
 				if (!['cancelled', 'rejected', 'failed', 'deleted', 'reversed'].includes(row.origin.status)) {
 					// "outstanding", "in_progress", "finished_issuer", "finished_contractor", "finished"
@@ -316,7 +334,13 @@ function renderContracts(req, res, mode) {
 					data.forEach(row => {
 						row.dateIssuedStr = datetimeFormat(row.dateIssued);
 						row.issuer = userDict[row.origin.issuerId];
-						row.assignee = userDict[row.origin.assigneeId];
+            
+            if(row.origin.availability == 'personal' && row.origin.forCorporation== false){
+              row.assignee = userDict[row.origin.acceptorId];  
+            }
+            if(!row.assignee){
+              row.assignee = userDict[row.origin.assigneeId];
+            }
 					});
 
 					getContractShips();

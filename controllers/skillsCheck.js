@@ -8,6 +8,7 @@ const fits_db = require('../dbHandler.js').db.collection('fits');
 //*
 const ESI2 = require('eve_swagger_interface');
 const SkillsApi = new ESI2.SkillsApi();
+const ESI2_defaultClient = ESI2.ApiClient.instance;
 //*/
 
 exports.index = function (req, res) {
@@ -31,8 +32,8 @@ exports.index = function (req, res) {
 			return;
 		}
 
-		//var evesso = ESI2_defaultClient.authentications['evesso'];
-		//evesso.accessToken = accessToken;
+		var evesso = ESI2_defaultClient.authentications['evesso'];
+		evesso.accessToken = accessToken;
 
 		SkillsApi.getCharactersCharacterIdSkills(characterId, { token: accessToken }, callback);
 	}, { req, res });
