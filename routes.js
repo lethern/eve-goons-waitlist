@@ -106,11 +106,11 @@ router.get('/api/sstats/member-registration', disabled);//statsController.getMon
 router.get('/test/contract-check', disabled);//contractCheck.testList);
 router.get('/test/contract-check2', disabled);//contractCheck.testList2);
 router.get('/test/contract-check3', disabled);//contractCheck.testList3);
+router.get('/test/contract-check-new', contractCheck_new.check1);
 
 router.post('/test/contract-check', disabled);//contractCheck.testList);
 router.post('/test/contract-check2', disabled);//contractCheck.testList2);
 router.post('/test/contract-check3', disabled);//contractCheck.testList3);
-router.post('/test/contract-check-new', contractCheck_new.check1);//contractCheck.testList);
 
 router.get('/test/fits-manager', disabled);//fitsManager.test);
 router.post('/test/fits-manager', disabled);//fitsManager.send);
