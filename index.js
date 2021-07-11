@@ -38,6 +38,7 @@ database.connect(function () {
 	const customSSO = require('./customSSO.js')(refresh, setup, request, url);
 	const fleets = require('./models/fleets.js')(setup);
 	const waitlist = require('./models/waitlist.js')(setup);
+	const contracts = require('./controllers/contractCheck_new.js');
 
 	//Start timers
 	//fleets.timers();
@@ -149,6 +150,8 @@ database.connect(function () {
 	http.listen(setup.settings.port, () => {
 		log.info('Server online');
 	});
+
+	contracts.run();
 
 	//const miniUsers = require('./models/miniUsers.js')(setup);
 	//miniUsers.reform2();

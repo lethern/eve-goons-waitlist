@@ -295,15 +295,15 @@ function renderContracts(req, res, mode) {
 					if (!userIDs.includes(row.origin.issuerId)) userIDs.push(row.origin.issuerId);
 				}
         
-        if(row.origin.availability == 'personal' && row.origin.forCorporation== false){
-          if (row.origin.acceptorId) {
-            if (!userIDs.includes(row.origin.acceptorId)) userIDs.push(row.origin.acceptorId);
-          }
-        }
+				if(row.origin.availability == 'personal' && row.origin.forCorporation== false){
+				  if (row.origin.acceptorId) {
+					if (!userIDs.includes(row.origin.acceptorId)) userIDs.push(row.origin.acceptorId);
+				  }
+				}
 
-        if (row.origin.assigneeId) {
-          if (!userIDs.includes(row.origin.assigneeId)) userIDs.push(row.origin.assigneeId);
-        }
+				if (row.origin.assigneeId) {
+				  if (!userIDs.includes(row.origin.assigneeId)) userIDs.push(row.origin.assigneeId);
+				}
 
 
 				if (!['cancelled', 'rejected', 'failed', 'deleted', 'reversed'].includes(row.origin.status)) {
@@ -335,12 +335,12 @@ function renderContracts(req, res, mode) {
 						row.dateIssuedStr = datetimeFormat(row.dateIssued);
 						row.issuer = userDict[row.origin.issuerId];
             
-            if(row.origin.availability == 'personal' && row.origin.forCorporation== false){
-              row.assignee = userDict[row.origin.acceptorId];  
-            }
-            if(!row.assignee){
-              row.assignee = userDict[row.origin.assigneeId];
-            }
+						if(row.origin.availability == 'personal' && row.origin.forCorporation== false){
+						  row.assignee = userDict[row.origin.acceptorId];  
+						}
+						if(!row.assignee){
+						  row.assignee = userDict[row.origin.assigneeId];
+						}
 					});
 
 					getContractShips();

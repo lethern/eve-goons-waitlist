@@ -13,7 +13,7 @@ module.exports = function() {
     */
     module.getLocation = function (user, cb) {
 		module.getRefreshToken(user.characterID, function(accessToken){
-			if(!!!accessToken){
+			if(!accessToken){
 				log.warn("user.getLocation: Could not get an accessToken", {pilot: user.name})
 				cb({id: 0, name: "unknown", lastcheck: Date.now()});
 				return;
