@@ -16,7 +16,16 @@ module.exports = { run };
 let gContracts = {};
 let log = createLogger();
 let _logRing = [];
-let logRing = createLogRing();
+let logRing = createRing(_logRing);
+
+////// API
+module.exports.getContracts = function () {
+	return gContracts;
+}
+module.exports.getLogs = function () {
+	return logRing.values().map( ([d, m]) => formatDateTime(d) + ' ' + m);
+}
+///////////
 
 function run() {
 	log.info("contracts: Start");
@@ -261,19 +270,24 @@ async function getContractShips(contractIds) {
 
 function createLogger() {
 	return {
-		info: (msg) => { _log.info(msg); logRing.add("[info] " + msg); },
-		error: (msg) => { _log.error(msg); logRing.add("[error] " + msg); },
-		debug: (msg) => { _log.debug(msg); logRing.add("[debug] " + msg); }
+		info: (msg, ...other)  => { _log.info(msg, other); logRing.add("[info] " + msg); },
+		error: (msg, ...other) => { _log.error(msg, other); logRing.add("[error] " + msg); },
+		debug: (msg, ...other) => { _log.debug(msg, other); logRing.add("[debug] " + msg); }
 	};
 }
 
-function createLogRing() {
+function createRing(ringData) {
 	return {
 		add: (elem) => {
-			if (_logRing.length >= 20)
-				_logRing.shift();
-			_logRing.push([new Date(), elem]);
+			if (ringData.length >= 20)
+				ringData.shift();
+			ringData.push([new Date(), elem]);
 		},
-		values: () => _logRing
+		values: () => ringData
 	}
+}
+
+function formatDateTime(d) {
+	return ("0" + d.getDate()).slice(-2) + "-" + ("0" + (d.getMonth() + 1)).slice(-2) + "-" +
+		d.getFullYear() + " " + ("0" + d.getHours()).slice(-2) + ":" + ("0" + d.getMinutes()).slice(-2);
 }

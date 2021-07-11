@@ -15,6 +15,7 @@ const contractCheck = require('./controllers/contractCheck.js');
 const fitsManager = require('./controllers/fitsManager.js');
 const skillsCheck = require('./controllers/skillsCheck.js');
 const newFleetManager = require('./controllers/newFleetManager.js');
+const contractCheck_new = require('./controllers/contractCheck_new_view.js');
 
 let disabled = function (req, res) {
 	res.render('disabled.njk', { userProfile: req.user, sideBarSelected: 0 });
@@ -109,6 +110,7 @@ router.get('/test/contract-check3', disabled);//contractCheck.testList3);
 router.post('/test/contract-check', disabled);//contractCheck.testList);
 router.post('/test/contract-check2', disabled);//contractCheck.testList2);
 router.post('/test/contract-check3', disabled);//contractCheck.testList3);
+router.post('/test/contract-check-new', contractCheck_new.check1);//contractCheck.testList);
 
 router.get('/test/fits-manager', disabled);//fitsManager.test);
 router.post('/test/fits-manager', disabled);//fitsManager.send);

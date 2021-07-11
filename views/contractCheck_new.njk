@@ -1,0 +1,68 @@
+{% include "./partials/header.njk" -%}
+{% include "./partials/nav.njk" %}
+
+<script>
+	window.SERV_user = '{{ user | safe }}';
+</script>
+<script src="/includes/js/socket.io.min.js"></script>
+<script src="/includes/js/contracts.js?v=1"></script>
+
+<!-- Page Content -->
+<div class="page-content {{ "active" if userProfile.settings.smSideNav == true }}">
+<div class="page-header">
+    <div class="container-fluid">
+    <h2 class="h5 no-margin-bottom">Contract check</h2>
+    </div>
+</div>
+<section class="no-padding-top padding-bottom">
+    <div class="container-fluid">
+        <div class="statistic-block block">
+			<!--
+				<div>
+					<a href="https://eve-waitlist.glitch.me/test/contract-check">check 1</a>
+					<a href="https://eve-waitlist.glitch.me/test/contract-check2">check 2</a>
+					<a href="https://eve-waitlist.glitch.me/test/contract-check3">check 3</a>
+				</div>
+			-->
+
+			<form action="/test/contract-check-new" method="POST" role="form">
+				<div class="form-group form-inline">
+					<label for="date_from">From:</label>
+					<input type="text" id="date_from" name="date_from" class="form-control p-1" autocomplete="off" placeholder="dd.mm.yyyy" autofocus {% if from %} value="{{ from }}"{% endif %}/>
+					<label for="date_from">To:</label>
+					<input type="text" id="date_to" name="date_to" class="form-control p-1" autocomplete="off" placeholder="dd.mm.yyyy" {% if to %} value="{{ to }}"{% endif %}/>
+					<button class="btn btn-success" type="submit"><i class="fas fa-edit"></i>Filter</button>
+				</div>
+			</form>
+
+
+			<span id="error"></span>
+			<span class='refresh'>Next refresh: </span><span id='refresh_time' class='refresh'></span>
+
+            <table id="data" class="table-striped" style="width:100%">
+                <thead>
+                    <tr>
+                        <th style="width: 160px;">Date issued</th>
+                        <th style="width: 200px;">Issuer</th>
+						<th style="width: 200px;">Assignee</th>
+						<th style="width: 500px;">Ship</th>
+                        <th>Price</th>
+						<th>Status</th>
+						<th>Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>         
+        </div>
+    </div>
+</section>
+
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/bs4/dt-1.10.16/fh-3.1.3/datatables.min.css"/>
+<script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.16/fh-3.1.3/datatables.min.js"></script>
+<style>
+	.refresh{
+		display: inline !important;
+	}
+</style>
+{%- include "./partials/footer.njk" %}
