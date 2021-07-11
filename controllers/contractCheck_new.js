@@ -261,9 +261,9 @@ async function getContractShips(contractIds) {
 
 function createLogger() {
 	return {
-		info: (msg) => { log.info(msg); logRing.add("[info] " + msg); },
-		error: (msg) => { log.error(msg); logRing.add("[error] " + msg); },
-		debug: (msg) => { log.debug(msg); logRing.add("[debug] " + msg); }
+		info: (msg) => { _log.info(msg); logRing.add("[info] " + msg); },
+		error: (msg) => { _log.error(msg); logRing.add("[error] " + msg); },
+		debug: (msg) => { _log.debug(msg); logRing.add("[debug] " + msg); }
 	};
 }
 
